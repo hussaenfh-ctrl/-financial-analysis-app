@@ -1,0 +1,279 @@
+/* style.css - واجهة عربية RTL لبرنامج التحليل المالي */
+
+:root {
+  color-scheme: light;
+  --surface-1: #fcfcfb;
+  --surface-2: #f9f9f7;
+  --surface-card: #ffffff;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --border: rgba(11, 11, 11, 0.10);
+  --grid: #e1e0d9;
+  --accent: #2a78d6;
+  --accent-ink: #ffffff;
+  --good: #0ca30c;
+  --warning: #b8790f;
+  --critical: #d03b3b;
+  --good-bg: #e6f6e6;
+  --warning-bg: #fdf1dc;
+  --critical-bg: #fbe8e8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --surface-2: #0d0d0d;
+    --surface-card: #232322;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --border: rgba(255, 255, 255, 0.10);
+    --grid: #2c2c2a;
+    --accent: #3987e5;
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #e66767;
+    --good-bg: rgba(12, 163, 12, 0.15);
+    --warning-bg: rgba(250, 178, 25, 0.15);
+    --critical-bg: rgba(230, 103, 103, 0.15);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19;
+  --surface-2: #0d0d0d;
+  --surface-card: #232322;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --border: rgba(255, 255, 255, 0.10);
+  --grid: #2c2c2a;
+  --accent: #3987e5;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #e66767;
+  --good-bg: rgba(12, 163, 12, 0.15);
+  --warning-bg: rgba(250, 178, 25, 0.15);
+  --critical-bg: rgba(230, 103, 103, 0.15);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5 { margin: 0 0 .5em; }
+
+.app-header {
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  gap: 10px;
+}
+.header-inner h1 { font-size: 1.3rem; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  overflow-x: auto;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: .95rem;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+#app-main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.btn {
+  border: 1px solid var(--border);
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: .9rem;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+}
+.btn-danger-text { color: var(--critical); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-small {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .82rem;
+}
+.btn-danger { color: var(--critical); }
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+/* ---------- إدخال البيانات ---------- */
+.entry-mode-switch { display: flex; gap: 8px; margin-bottom: 16px; }
+.mode-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.mode-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.entry-mode-panel { display: none; }
+.entry-mode-panel.active { display: block; }
+
+.entry-toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+.balance-status { font-size: .88rem; padding: 4px 10px; border-radius: 6px; }
+.balance-status.ok { color: var(--good); background: var(--good-bg); }
+.balance-status.bad { color: var(--critical); background: var(--critical-bg); }
+
+.table-scroll { overflow-x: auto; }
+
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { border: 1px solid var(--grid); padding: 7px 10px; text-align: center; white-space: nowrap; }
+th { background: var(--surface-2); color: var(--text-secondary); font-weight: 600; }
+
+.manual-table td.label-cell, .manual-table th.label-cell {
+  text-align: right;
+  position: sticky;
+  right: 0;
+  background: var(--surface-card);
+  min-width: 220px;
+}
+.manual-table tr.section-row td { background: var(--surface-2); font-weight: 700; text-align: right; color: var(--text-secondary); }
+.manual-table tr.computed-row td.label-cell { font-weight: 600; }
+.manual-table input[type="number"], .manual-table input[type="text"] {
+  width: 130px;
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+  text-align: center;
+  font-size: .88rem;
+}
+.manual-table .computed-value { color: var(--text-secondary); font-weight: 600; }
+.manual-table th input.period-name-input {
+  width: 110px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.remove-period-btn { display: block; margin: 4px auto 0; font-size: .7rem; }
+
+/* ---------- رفع اكسيل ---------- */
+.excel-upload-card p { margin-top: 0; color: var(--text-secondary); }
+.mapping-status { margin-top: 8px; font-size: .88rem; }
+.mapping-status.success { color: var(--good); }
+.mapping-status.error { color: var(--critical); }
+
+.excel-preview-wrap { overflow-x: auto; max-height: 320px; overflow-y: auto; border: 1px solid var(--grid); border-radius: 8px; margin-bottom: 10px; }
+table.excel-preview { font-size: .78rem; }
+table.excel-preview td.row-index { background: var(--surface-2); color: var(--text-muted); font-weight: 600; }
+.hint { color: var(--text-muted); font-size: .82rem; }
+
+.mapping-section { margin: 18px 0; }
+.period-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.period-rows { margin-bottom: 10px; }
+.item-map-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px dashed var(--grid); }
+.item-map-label { flex: 0 0 260px; color: var(--text-secondary); font-size: .88rem; }
+.item-group { margin-bottom: 14px; }
+select, .col-select, .row-select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  max-width: 320px;
+}
+input.period-label-input { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary); width: 120px; }
+
+/* ---------- بطاقات النسب ---------- */
+.ratio-group-title { margin-top: 22px; }
+.ratio-table td.flag-good { color: var(--good); font-weight: 700; background: var(--good-bg); }
+.ratio-table td.flag-watch { color: var(--warning); font-weight: 700; background: var(--warning-bg); }
+.ratio-table td.flag-poor { color: var(--critical); font-weight: 700; background: var(--critical-bg); }
+.ratio-table td.flag-na { color: var(--text-muted); }
+.ratio-table th.label-cell, .ratio-table td.label-cell { text-align: right; min-width: 220px; }
+
+.chart-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 16px 0; }
+.chart-wrap { position: relative; height: 320px; }
+
+/* ---------- ملخص ---------- */
+.rating-badge { display: inline-block; padding: 6px 16px; border-radius: 999px; font-weight: 700; margin-bottom: 12px; }
+.rating-badge.good { background: var(--good-bg); color: var(--good); }
+.rating-badge.watch { background: var(--warning-bg); color: var(--warning); }
+.rating-badge.poor { background: var(--critical-bg); color: var(--critical); }
+
+.sw-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 16px; }
+@media (max-width: 720px) { .sw-columns { grid-template-columns: 1fr; } }
+.sw-col h4 { margin-bottom: 8px; }
+.sw-col.strengths h4 { color: var(--good); }
+.sw-col.weaknesses h4 { color: var(--critical); }
+.sw-col ul { margin: 0; padding-inline-start: 20px; }
+.sw-col li { margin-bottom: 8px; line-height: 1.5; font-size: .92rem; }
+.watch-list { margin-top: 16px; }
+.watch-list h4 { color: var(--warning); }
+
+.summary-paragraphs p { line-height: 1.8; color: var(--text-secondary); }
+
+.empty-state { text-align: center; color: var(--text-muted); padding: 60px 20px; }
+
+.app-footer { text-align: center; color: var(--text-muted); font-size: .8rem; padding: 20px; }
+
+/* ---------- طباعة ---------- */
+@media print {
+  .no-print { display: none !important; }
+  .tab-panel { display: block !important; margin-bottom: 30px; page-break-inside: avoid; }
+  body { background: #fff; }
+  .app-header { position: static; }
+}
