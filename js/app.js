@@ -227,10 +227,17 @@ window.FA = window.FA || {};
 
       groupTemplate.ratios.forEach(function (ratioTemplate, rIdx) {
         var tr = el("tr");
-        tr.appendChild(el("td", { class: "label-cell" }, [biEl("span", ratioTemplate.labelEn, ratioTemplate.label)]));
+        var labelCell = el("td", { class: "label-cell" }, [biEl("span", ratioTemplate.labelEn, ratioTemplate.label)]);
+        if (ratioTemplate.formulaEn) {
+          labelCell.appendChild(biEl("span", ratioTemplate.formulaEn, ratioTemplate.formulaAr, "ratio-formula"));
+        }
+        tr.appendChild(labelCell);
         allRatios.forEach(function (periodResult) {
           var r = periodResult.groups[gIdx].ratios[rIdx];
-          var td = el("td", { text: fmtRatio(r) });
+          var td = el("td");
+          td.appendChild(el("div", { class: "ratio-value", text: fmtRatio(r) }));
+          var operandsTxt = FA.format.operands(r);
+          if (operandsTxt) td.appendChild(el("div", { class: "ratio-operands", text: operandsTxt }));
           if (r.flag) td.classList.add("flag-" + r.flag);
           tr.appendChild(td);
         });
@@ -378,16 +385,32 @@ window.FA = window.FA || {};
     table.appendChild(head);
 
     [
-      { key: "dio", en: "Days Inventory Outstanding (DIO)", ar: "فترة تخزين المخزون (DIO)" },
-      { key: "dso", en: "Days Sales Outstanding (DSO)", ar: "فترة تحصيل العملاء (DSO)" },
-      { key: "dpo", en: "Days Payable Outstanding (DPO)", ar: "فترة سداد الموردين (DPO)" },
-      { key: "ccc", en: "Cash Conversion Cycle (CCC)", ar: "دورة التحويل النقدي (CCC)" }
+      { key: "dio", en: "Days Inventory Outstanding (DIO)", ar: "فترة تخزين المخزون (DIO)", fEn: "365 ÷ Inventory Turnover", fAr: "365 ÷ معدل دوران المخزون" },
+      { key: "dso", en: "Days Sales Outstanding (DSO)", ar: "فترة تحصيل العملاء (DSO)", fEn: "365 ÷ Receivables Turnover", fAr: "365 ÷ معدل دوران العملاء" },
+      { key: "dpo", en: "Days Payable Outstanding (DPO)", ar: "فترة سداد الموردين (DPO)", fEn: "365 ÷ Payables Turnover", fAr: "365 ÷ معدل دوران الموردين" },
+      { key: "ccc", en: "Cash Conversion Cycle (CCC)", ar: "دورة التحويل النقدي (CCC)", fEn: "DIO + DSO − DPO", fAr: "DIO + DSO − DPO" }
     ].forEach(function (row) {
       var tr = el("tr", row.key === "ccc" ? { class: "computed-row" } : null);
-      tr.appendChild(el("td", { class: "label-cell" }, [biEl("span", row.en, row.ar)]));
+      var labelCell = el("td", { class: "label-cell" }, [biEl("span", row.en, row.ar)]);
+      labelCell.appendChild(biEl("span", row.fEn, row.fAr, "ratio-formula"));
+      tr.appendChild(labelCell);
       allRatios.forEach(function (r) {
         var v = r.ccc[row.key];
-        tr.appendChild(el("td", { text: v !== null ? fmtNum(v, 0) + " d" : "—" }));
+        var td = el("td");
+        td.appendChild(el("div", { class: "ratio-value", text: v !== null ? fmtNum(v, 0) + " d" : "—" }));
+        var opTxt = "";
+        var activityRatios = r.groups[1].ratios; // [inventoryTurnover, dio, receivableTurnover, dso, payableTurnover, dpo, assetTurnover]
+        if (row.key === "ccc" && r.ccc.dio !== null) {
+          opTxt = fmtNum(r.ccc.dio, 0) + " + " + fmtNum(r.ccc.dso, 0) + " − " + fmtNum(r.ccc.dpo, 0);
+        } else if (row.key === "dio" && v !== null) {
+          opTxt = "365 ÷ " + fmtNum(activityRatios[0].value, 2) + "×";
+        } else if (row.key === "dso" && v !== null) {
+          opTxt = "365 ÷ " + fmtNum(activityRatios[2].value, 2) + "×";
+        } else if (row.key === "dpo" && v !== null) {
+          opTxt = "365 ÷ " + fmtNum(activityRatios[4].value, 2) + "×";
+        }
+        if (opTxt) td.appendChild(el("div", { class: "ratio-operands", text: opTxt }));
+        tr.appendChild(td);
       });
       table.appendChild(tr);
     });

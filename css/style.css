@@ -126,6 +126,9 @@ h1, h2, h3, h4, h5 { margin: 0 0 .5em; }
 
 #app-main { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
+.content-block { overflow-x: auto; }
+.content-block table { min-width: fit-content; }
+
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
@@ -251,11 +254,33 @@ input.period-label-input { padding: 6px 8px; border-radius: 6px; border: 1px sol
 
 /* ---------- بطاقات النسب ---------- */
 .ratio-group-title { margin-top: 22px; }
-.ratio-table td.flag-good { color: var(--good); font-weight: 700; background: var(--good-bg); }
-.ratio-table td.flag-watch { color: var(--warning); font-weight: 700; background: var(--warning-bg); }
-.ratio-table td.flag-poor { color: var(--critical); font-weight: 700; background: var(--critical-bg); }
+.ratio-table td.flag-good .ratio-value { color: var(--good); font-weight: 700; }
+.ratio-table td.flag-watch .ratio-value { color: var(--warning); font-weight: 700; }
+.ratio-table td.flag-poor .ratio-value { color: var(--critical); font-weight: 700; }
+.ratio-table td.flag-good { background: var(--good-bg); }
+.ratio-table td.flag-watch { background: var(--warning-bg); }
+.ratio-table td.flag-poor { background: var(--critical-bg); }
 .ratio-table td.flag-na { color: var(--text-muted); }
-.ratio-table th.label-cell, .ratio-table td.label-cell { text-align: left; min-width: 220px; }
+.ratio-table th.label-cell, .ratio-table td.label-cell { text-align: left; min-width: 240px; }
+
+.ratio-formula {
+  display: block;
+  margin-top: 3px;
+  font-size: .72rem;
+  font-style: italic;
+  color: var(--text-muted);
+  font-weight: 400;
+  white-space: normal;
+}
+.ratio-formula .lbl-en { font-style: italic; font-size: 1em; }
+.ratio-formula .lbl-ar { font-style: italic; font-size: .92em; }
+.ratio-value { font-variant-numeric: tabular-nums; }
+.ratio-operands {
+  margin-top: 2px;
+  font-size: .74rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
 
 .chart-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 16px 0; }
 .chart-wrap { position: relative; height: 320px; }

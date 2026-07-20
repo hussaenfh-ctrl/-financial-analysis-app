@@ -82,10 +82,18 @@ window.FA = window.FA || {};
           titleEn: "Liquidity Ratios",
           title: "نسب السيولة",
           ratios: [
-            { key: "currentRatio", labelEn: "Current Ratio", label: "نسبة التداول", value: currentRatio, fmt: "x", flag: classify(currentRatio, 1.5, 1.0, true) },
-            { key: "quickRatio", labelEn: "Quick Ratio", label: "النسبة السريعة", value: quickRatio, fmt: "x", flag: classify(quickRatio, 1.0, 0.7, true) },
-            { key: "cashRatio", labelEn: "Cash Ratio", label: "نسبة النقدية", value: cashRatio, fmt: "x", flag: classify(cashRatio, 0.2, 0.1, true) },
-            { key: "workingCapital", labelEn: "Working Capital", label: "رأس المال العامل", value: workingCapital, fmt: "num", flag: workingCapital >= 0 ? "good" : "poor" }
+            { key: "currentRatio", labelEn: "Current Ratio", label: "نسبة التداول", value: currentRatio, fmt: "x", flag: classify(currentRatio, 1.5, 1.0, true),
+              op: "div", numerator: v.totalCurrentAssets, denominator: v.totalCurrentLiabilities,
+              formulaEn: "Total Current Assets ÷ Total Current Liabilities", formulaAr: "إجمالي الأصول المتداولة ÷ إجمالي الخصوم المتداولة" },
+            { key: "quickRatio", labelEn: "Quick Ratio", label: "النسبة السريعة", value: quickRatio, fmt: "x", flag: classify(quickRatio, 1.0, 0.7, true),
+              op: "div", numerator: v.totalCurrentAssets - v.inventory, denominator: v.totalCurrentLiabilities,
+              formulaEn: "(Current Assets − Inventory) ÷ Current Liabilities", formulaAr: "(الأصول المتداولة - المخزون) ÷ الخصوم المتداولة" },
+            { key: "cashRatio", labelEn: "Cash Ratio", label: "نسبة النقدية", value: cashRatio, fmt: "x", flag: classify(cashRatio, 0.2, 0.1, true),
+              op: "div", numerator: v.cash, denominator: v.totalCurrentLiabilities,
+              formulaEn: "Cash & Equivalents ÷ Total Current Liabilities", formulaAr: "النقدية وما في حكمها ÷ إجمالي الخصوم المتداولة" },
+            { key: "workingCapital", labelEn: "Working Capital", label: "رأس المال العامل", value: workingCapital, fmt: "num", flag: workingCapital >= 0 ? "good" : "poor",
+              op: "sub", numerator: v.totalCurrentAssets, denominator: v.totalCurrentLiabilities,
+              formulaEn: "Total Current Assets − Total Current Liabilities", formulaAr: "إجمالي الأصول المتداولة - إجمالي الخصوم المتداولة" }
           ]
         },
         {
@@ -93,13 +101,27 @@ window.FA = window.FA || {};
           titleEn: "Activity & Efficiency Ratios",
           title: "نسب النشاط والكفاءة",
           ratios: [
-            { key: "inventoryTurnover", labelEn: "Inventory Turnover", label: "معدل دوران المخزون", value: inventoryTurnover, fmt: "x" },
-            { key: "dio", labelEn: "Days Inventory Outstanding (DIO)", label: "متوسط فترة تخزين المخزون (DIO)", value: dio, fmt: "days" },
-            { key: "receivableTurnover", labelEn: "Receivables Turnover", label: "معدل دوران العملاء", value: receivableTurnover, fmt: "x" },
-            { key: "dso", labelEn: "Days Sales Outstanding (DSO)", label: "متوسط فترة تحصيل العملاء (DSO)", value: dso, fmt: "days" },
-            { key: "payableTurnover", labelEn: "Payables Turnover", label: "معدل دوران الموردين", value: payableTurnover, fmt: "x" },
-            { key: "dpo", labelEn: "Days Payable Outstanding (DPO)", label: "متوسط فترة سداد الموردين (DPO)", value: dpo, fmt: "days" },
-            { key: "assetTurnover", labelEn: "Asset Turnover", label: "معدل دوران الأصول", value: assetTurnover, fmt: "x" }
+            { key: "inventoryTurnover", labelEn: "Inventory Turnover", label: "معدل دوران المخزون", value: inventoryTurnover, fmt: "x",
+              op: "div", numerator: v.cogs, denominator: avgInventory,
+              formulaEn: "COGS ÷ Average Inventory", formulaAr: "تكلفة المبيعات ÷ متوسط المخزون" },
+            { key: "dio", labelEn: "Days Inventory Outstanding (DIO)", label: "متوسط فترة تخزين المخزون (DIO)", value: dio, fmt: "days",
+              op: "div", numerator: 365, denominator: inventoryTurnover, denFmt: "x",
+              formulaEn: "365 ÷ Inventory Turnover", formulaAr: "365 ÷ معدل دوران المخزون" },
+            { key: "receivableTurnover", labelEn: "Receivables Turnover", label: "معدل دوران العملاء", value: receivableTurnover, fmt: "x",
+              op: "div", numerator: v.revenue, denominator: avgAR,
+              formulaEn: "Revenue ÷ Average Accounts Receivable", formulaAr: "الإيرادات ÷ متوسط العملاء" },
+            { key: "dso", labelEn: "Days Sales Outstanding (DSO)", label: "متوسط فترة تحصيل العملاء (DSO)", value: dso, fmt: "days",
+              op: "div", numerator: 365, denominator: receivableTurnover, denFmt: "x",
+              formulaEn: "365 ÷ Receivables Turnover", formulaAr: "365 ÷ معدل دوران العملاء" },
+            { key: "payableTurnover", labelEn: "Payables Turnover", label: "معدل دوران الموردين", value: payableTurnover, fmt: "x",
+              op: "div", numerator: v.cogs, denominator: avgAP,
+              formulaEn: "COGS ÷ Average Accounts Payable", formulaAr: "تكلفة المبيعات ÷ متوسط الموردين" },
+            { key: "dpo", labelEn: "Days Payable Outstanding (DPO)", label: "متوسط فترة سداد الموردين (DPO)", value: dpo, fmt: "days",
+              op: "div", numerator: 365, denominator: payableTurnover, denFmt: "x",
+              formulaEn: "365 ÷ Payables Turnover", formulaAr: "365 ÷ معدل دوران الموردين" },
+            { key: "assetTurnover", labelEn: "Asset Turnover", label: "معدل دوران الأصول", value: assetTurnover, fmt: "x",
+              op: "div", numerator: v.revenue, denominator: avgAssets,
+              formulaEn: "Revenue ÷ Average Total Assets", formulaAr: "الإيرادات ÷ متوسط إجمالي الأصول" }
           ]
         },
         {
@@ -107,11 +129,21 @@ window.FA = window.FA || {};
           titleEn: "Profitability Ratios",
           title: "نسب الربحية",
           ratios: [
-            { key: "grossMargin", labelEn: "Gross Profit Margin", label: "هامش مجمل الربح", value: grossMargin, fmt: "pct", flag: classify(grossMargin, 0.30, 0.10, true) },
-            { key: "operatingMargin", labelEn: "Operating Margin", label: "هامش الربح التشغيلي", value: operatingMargin, fmt: "pct", flag: classify(operatingMargin, 0.15, 0.05, true) },
-            { key: "netMargin", labelEn: "Net Profit Margin", label: "هامش صافي الربح", value: netMargin, fmt: "pct", flag: classify(netMargin, 0.10, 0.0, true) },
-            { key: "roa", labelEn: "Return on Assets (ROA)", label: "العائد على الأصول (ROA)", value: roa, fmt: "pct", flag: classify(roa, 0.05, 0.0, true) },
-            { key: "roe", labelEn: "Return on Equity (ROE)", label: "العائد على حقوق الملكية (ROE)", value: roe, fmt: "pct", flag: classify(roe, 0.15, 0.0, true) }
+            { key: "grossMargin", labelEn: "Gross Profit Margin", label: "هامش مجمل الربح", value: grossMargin, fmt: "pct", flag: classify(grossMargin, 0.30, 0.10, true),
+              op: "div", numerator: v.grossProfit, denominator: v.revenue,
+              formulaEn: "Gross Profit ÷ Revenue", formulaAr: "مجمل الربح ÷ الإيرادات" },
+            { key: "operatingMargin", labelEn: "Operating Margin", label: "هامش الربح التشغيلي", value: operatingMargin, fmt: "pct", flag: classify(operatingMargin, 0.15, 0.05, true),
+              op: "div", numerator: v.operatingIncome, denominator: v.revenue,
+              formulaEn: "Operating Income (EBIT) ÷ Revenue", formulaAr: "الربح التشغيلي (EBIT) ÷ الإيرادات" },
+            { key: "netMargin", labelEn: "Net Profit Margin", label: "هامش صافي الربح", value: netMargin, fmt: "pct", flag: classify(netMargin, 0.10, 0.0, true),
+              op: "div", numerator: v.netIncome, denominator: v.revenue,
+              formulaEn: "Net Income ÷ Revenue", formulaAr: "صافي الربح ÷ الإيرادات" },
+            { key: "roa", labelEn: "Return on Assets (ROA)", label: "العائد على الأصول (ROA)", value: roa, fmt: "pct", flag: classify(roa, 0.05, 0.0, true),
+              op: "div", numerator: v.netIncome, denominator: avgAssets,
+              formulaEn: "Net Income ÷ Average Total Assets", formulaAr: "صافي الربح ÷ متوسط إجمالي الأصول" },
+            { key: "roe", labelEn: "Return on Equity (ROE)", label: "العائد على حقوق الملكية (ROE)", value: roe, fmt: "pct", flag: classify(roe, 0.15, 0.0, true),
+              op: "div", numerator: v.netIncome, denominator: avgEquity,
+              formulaEn: "Net Income ÷ Average Total Equity", formulaAr: "صافي الربح ÷ متوسط إجمالي حقوق الملكية" }
           ]
         },
         {
@@ -119,10 +151,18 @@ window.FA = window.FA || {};
           titleEn: "Leverage & Solvency Ratios",
           title: "نسب المديونية والملاءة",
           ratios: [
-            { key: "debtRatio", labelEn: "Total Debt to Assets", label: "نسبة إجمالي الدين إلى الأصول", value: debtRatio, fmt: "pct", flag: classify(debtRatio, 0.5, 0.7, false) },
-            { key: "debtToEquity", labelEn: "Debt to Equity", label: "نسبة الدين إلى حقوق الملكية", value: debtToEquity, fmt: "x", flag: classify(debtToEquity, 1.0, 2.0, false) },
-            { key: "equityRatio", labelEn: "Equity to Assets", label: "نسبة حقوق الملكية إلى الأصول", value: equityRatio, fmt: "pct" },
-            { key: "interestCoverage", labelEn: "Interest Coverage Ratio", label: "معدل تغطية الفوائد", value: interestCoverage, fmt: "x", flag: classify(interestCoverage, 4, 1.5, true) }
+            { key: "debtRatio", labelEn: "Total Debt to Assets", label: "نسبة إجمالي الدين إلى الأصول", value: debtRatio, fmt: "pct", flag: classify(debtRatio, 0.5, 0.7, false),
+              op: "div", numerator: v.totalLiabilities, denominator: v.totalAssets,
+              formulaEn: "Total Liabilities ÷ Total Assets", formulaAr: "إجمالي الخصوم ÷ إجمالي الأصول" },
+            { key: "debtToEquity", labelEn: "Debt to Equity", label: "نسبة الدين إلى حقوق الملكية", value: debtToEquity, fmt: "x", flag: classify(debtToEquity, 1.0, 2.0, false),
+              op: "div", numerator: v.totalLiabilities, denominator: v.totalEquity,
+              formulaEn: "Total Liabilities ÷ Total Equity", formulaAr: "إجمالي الخصوم ÷ إجمالي حقوق الملكية" },
+            { key: "equityRatio", labelEn: "Equity to Assets", label: "نسبة حقوق الملكية إلى الأصول", value: equityRatio, fmt: "pct",
+              op: "div", numerator: v.totalEquity, denominator: v.totalAssets,
+              formulaEn: "Total Equity ÷ Total Assets", formulaAr: "إجمالي حقوق الملكية ÷ إجمالي الأصول" },
+            { key: "interestCoverage", labelEn: "Interest Coverage Ratio", label: "معدل تغطية الفوائد", value: interestCoverage, fmt: "x", flag: classify(interestCoverage, 4, 1.5, true),
+              op: "div", numerator: v.operatingIncome, denominator: v.interestExpense,
+              formulaEn: "Operating Income (EBIT) ÷ Interest Expense", formulaAr: "الربح التشغيلي (EBIT) ÷ مصروفات الفوائد" }
           ]
         }
       ],
@@ -235,8 +275,23 @@ window.FA = window.FA || {};
     }
   }
 
+  function formatOperand(value, fmt) {
+    if (value === null || value === undefined || isNaN(value)) return "—";
+    if (fmt === "x") return fmtNum(value, 2) + "×";
+    return fmtNum(value, 0);
+  }
+
+  function formatOperands(ratio) {
+    if (ratio.numerator === undefined || ratio.denominator === undefined) return "";
+    var a = formatOperand(ratio.numerator, ratio.numFmt);
+    var b = formatOperand(ratio.denominator, ratio.denFmt);
+    var opSign = ratio.op === "sub" ? "−" : "÷";
+    return a + " " + opSign + " " + b;
+  }
+
   FA.format = {
     num: fmtNum,
-    ratio: formatRatioValue
+    ratio: formatRatioValue,
+    operands: formatOperands
   };
 })(window.FA);
