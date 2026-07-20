@@ -1,4 +1,6 @@
-/* app.js - ربط الواجهة، التنقل بين التبويبات، الجدول اليدوي، وعرض نتائج التحليل */
+/* app.js - ربط الواجهة، التنقل بين التبويبات، الجدول اليدوي، وعرض نتائج التحليل
+ * الواجهة إنجليزية أساسية مع ترجمة عربية أصغر تحت كل نص
+ */
 window.FA = window.FA || {};
 
 (function (FA) {
@@ -6,6 +8,8 @@ window.FA = window.FA || {};
 
   var fmtNum = FA.format.num;
   var fmtRatio = FA.format.ratio;
+  var bi = FA.util.biStr;
+  var biEl = FA.util.biEl;
 
   function el(tag, attrs, children) {
     var e = document.createElement(tag);
@@ -19,6 +23,13 @@ window.FA = window.FA || {};
     }
     (children || []).forEach(function (c) { if (c) e.appendChild(c); });
     return e;
+  }
+
+  function biTh(en, ar) {
+    return el("th", { class: "label-cell" }, [biEl("span", en, ar)]);
+  }
+  function biH(tag, en, ar, cls) {
+    return el(tag, cls ? { class: cls } : null, [biEl("span", en, ar)]);
   }
 
   // =========================================================================
@@ -65,20 +76,22 @@ window.FA = window.FA || {};
     }
   }
 
-  function emptyState(container, msg) {
+  function emptyState(container, en, ar) {
     container.innerHTML = "";
-    container.appendChild(el("div", { class: "empty-state", text: msg }));
+    container.appendChild(el("div", { class: "empty-state" }, [biEl("div", en, ar)]));
   }
+
+  var NO_DATA_MSG = { en: "Enter data first from the \"Data Entry\" tab.", ar: "أدخل بيانات أولاً من تبويب \"إدخال البيانات\"." };
 
   // =========================================================================
   // الجدول اليدوي
   // =========================================================================
   var SECTION_HEADERS = {
-    cash: "الأصول المتداولة",
-    netFixedAssets: "الأصول غير المتداولة",
-    accountsPayable: "الخصوم المتداولة",
-    longTermDebt: "الخصوم غير المتداولة",
-    shareCapital: "حقوق الملكية"
+    cash: { en: "Current Assets", ar: "الأصول المتداولة" },
+    netFixedAssets: { en: "Non-Current Assets", ar: "الأصول غير المتداولة" },
+    accountsPayable: { en: "Current Liabilities", ar: "الخصوم المتداولة" },
+    longTermDebt: { en: "Non-Current Liabilities", ar: "الخصوم غير المتداولة" },
+    shareCapital: { en: "Equity", ar: "حقوق الملكية" }
   };
 
   function renderManualTable() {
@@ -87,14 +100,15 @@ window.FA = window.FA || {};
     table.innerHTML = "";
 
     if (periods.length === 0) {
-      table.appendChild(el("tr", null, [el("td", { text: "لا توجد فترات بعد. اضغط \"+ إضافة فترة / سنة\" أو حمّل بيانات تجريبية." })]));
+      var tr0 = el("tr", null, [el("td", null, [biEl("span", "No periods yet. Click \"+ Add Period / Year\" or load sample data.", "لا توجد فترات بعد. اضغط \"+ إضافة فترة / سنة\" أو حمّل بيانات تجريبية.")])]);
+      table.appendChild(tr0);
       updateBalanceStatus();
       return;
     }
 
     // صف الرأس
     var headRow = el("tr");
-    headRow.appendChild(el("th", { class: "label-cell", text: "البند" }));
+    headRow.appendChild(biTh("Item", "البند"));
     periods.forEach(function (p) {
       var th = el("th");
       var input = el("input", { type: "text", class: "period-name-input", value: p.label });
@@ -102,9 +116,9 @@ window.FA = window.FA || {};
       input.addEventListener("change", function () {
         FA.Store.renamePeriod(p.id, input.value.trim() || p.label);
       });
-      var removeBtn = el("button", { type: "button", class: "btn-small btn-danger remove-period-btn", text: "حذف الفترة" });
+      var removeBtn = el("button", { type: "button", class: "btn-small btn-danger remove-period-btn" }, [biEl("span", "Remove", "حذف الفترة")]);
       removeBtn.addEventListener("click", function () {
-        if (confirm("هل تريد حذف فترة \"" + p.label + "\"؟")) {
+        if (confirm("Delete period \"" + p.label + "\"? / حذف فترة \"" + p.label + "\"؟")) {
           FA.Store.removePeriod(p.id);
           renderManualTable();
         }
@@ -118,7 +132,7 @@ window.FA = window.FA || {};
     function addSectionHeaderIfNeeded(key) {
       if (SECTION_HEADERS[key]) {
         var tr = el("tr", { class: "section-row" });
-        var td = el("td", { text: SECTION_HEADERS[key] });
+        var td = el("td", null, [biEl("span", SECTION_HEADERS[key].en, SECTION_HEADERS[key].ar)]);
         td.colSpan = periods.length + 1;
         tr.appendChild(td);
         table.appendChild(tr);
@@ -128,7 +142,7 @@ window.FA = window.FA || {};
     function buildItemRow(item) {
       addSectionHeaderIfNeeded(item.key);
       var tr = el("tr", { class: item.computed ? "computed-row" : "" });
-      tr.appendChild(el("td", { class: "label-cell", text: item.label }));
+      tr.appendChild(el("td", { class: "label-cell" }, [biEl("span", item.labelEn, item.label)]));
       periods.forEach(function (p) {
         var td = el("td");
         if (item.computed) {
@@ -152,14 +166,14 @@ window.FA = window.FA || {};
     }
 
     var isHeader = el("tr", { class: "section-row" });
-    var isHeaderTd = el("td", { text: "قائمة الدخل" });
+    var isHeaderTd = el("td", null, [biEl("span", "Income Statement", "قائمة الدخل")]);
     isHeaderTd.colSpan = periods.length + 1;
     isHeader.appendChild(isHeaderTd);
     table.appendChild(isHeader);
     FA.itemDefs.incomeStatement.forEach(buildItemRow);
 
     var bsHeader = el("tr", { class: "section-row" });
-    var bsHeaderTd = el("td", { text: "قائمة المركز المالي" });
+    var bsHeaderTd = el("td", null, [biEl("span", "Balance Sheet", "قائمة المركز المالي")]);
     bsHeaderTd.colSpan = periods.length + 1;
     bsHeader.appendChild(bsHeaderTd);
     table.appendChild(bsHeader);
@@ -177,16 +191,18 @@ window.FA = window.FA || {};
   }
 
   function updateBalanceStatus() {
-    var el2 = document.getElementById("balanceStatus");
+    var elx = document.getElementById("balanceStatus");
     var periods = FA.Store.getPeriods();
-    if (periods.length === 0) { el2.textContent = ""; el2.className = "balance-status"; return; }
+    elx.innerHTML = "";
+    if (periods.length === 0) { elx.className = "balance-status"; return; }
     var unbalanced = periods.filter(function (p) { return !FA.Store.validateBalance(p.id).balanced; });
     if (unbalanced.length === 0) {
-      el2.textContent = "✓ إجمالي الأصول = إجمالي الخصوم وحقوق الملكية في كل الفترات";
-      el2.className = "balance-status ok";
+      elx.appendChild(biEl("span", "✓ Total Assets = Total Liabilities + Equity in all periods", "✓ إجمالي الأصول = إجمالي الخصوم وحقوق الملكية في كل الفترات"));
+      elx.className = "balance-status ok";
     } else {
-      el2.textContent = "⚠ عدم توازن في فترات: " + unbalanced.map(function (p) { return p.label; }).join("، ");
-      el2.className = "balance-status bad";
+      var labels = unbalanced.map(function (p) { return p.label; }).join(", ");
+      elx.appendChild(biEl("span", "⚠ Imbalance in period(s): " + labels, "⚠ عدم توازن في فترات: " + labels));
+      elx.className = "balance-status bad";
     }
   }
 
@@ -196,22 +212,22 @@ window.FA = window.FA || {};
   function renderRatiosTab() {
     var container = document.getElementById("ratiosContent");
     var periods = FA.Store.getPeriods();
-    if (periods.length === 0) { emptyState(container, "أدخل بيانات أولاً من تبويب \"إدخال البيانات\"."); return; }
+    if (periods.length === 0) { emptyState(container, NO_DATA_MSG.en, NO_DATA_MSG.ar); return; }
 
     var allRatios = FA.Analysis.computeAllRatios();
     container.innerHTML = "";
 
     allRatios[0].groups.forEach(function (groupTemplate, gIdx) {
-      container.appendChild(el("h3", { class: "ratio-group-title", text: groupTemplate.title }));
+      container.appendChild(biH("h3", groupTemplate.titleEn, groupTemplate.title, "ratio-group-title"));
       var table = el("table", { class: "ratio-table" });
       var head = el("tr");
-      head.appendChild(el("th", { class: "label-cell", text: "النسبة" }));
+      head.appendChild(biTh("Ratio", "النسبة"));
       allRatios.forEach(function (r) { head.appendChild(el("th", { text: r.periodLabel })); });
       table.appendChild(head);
 
       groupTemplate.ratios.forEach(function (ratioTemplate, rIdx) {
         var tr = el("tr");
-        tr.appendChild(el("td", { class: "label-cell", text: ratioTemplate.label }));
+        tr.appendChild(el("td", { class: "label-cell" }, [biEl("span", ratioTemplate.labelEn, ratioTemplate.label)]));
         allRatios.forEach(function (periodResult) {
           var r = periodResult.groups[gIdx].ratios[rIdx];
           var td = el("td", { text: fmtRatio(r) });
@@ -230,23 +246,23 @@ window.FA = window.FA || {};
   function renderVerticalTab() {
     var container = document.getElementById("verticalContent");
     var periods = FA.Store.getPeriods();
-    if (periods.length === 0) { emptyState(container, "أدخل بيانات أولاً من تبويب \"إدخال البيانات\"."); return; }
+    if (periods.length === 0) { emptyState(container, NO_DATA_MSG.en, NO_DATA_MSG.ar); return; }
 
     var vertical = FA.Analysis.computeVertical();
     container.innerHTML = "";
 
-    function buildTable(title, key) {
-      container.appendChild(el("h3", { text: title }));
+    function buildTable(en, ar, key) {
+      container.appendChild(biH("h3", en, ar));
       var table = el("table");
       var head = el("tr");
-      head.appendChild(el("th", { class: "label-cell", text: "البند" }));
+      head.appendChild(biTh("Item", "البند"));
       vertical.forEach(function (v) { head.appendChild(el("th", { text: v.periodLabel })); });
       table.appendChild(head);
 
       var rowDefs = vertical[0][key];
       rowDefs.forEach(function (rowTemplate, idx) {
         var tr = el("tr");
-        tr.appendChild(el("td", { class: "label-cell", text: rowTemplate.label }));
+        tr.appendChild(el("td", { class: "label-cell" }, [biEl("span", rowTemplate.labelEn, rowTemplate.label)]));
         vertical.forEach(function (v) {
           var row = v[key][idx];
           var pctTxt = row.pct !== null ? " (" + fmtNum(row.pct * 100, 1) + "%)" : "";
@@ -257,11 +273,11 @@ window.FA = window.FA || {};
       container.appendChild(table);
     }
 
-    buildTable("قائمة الدخل (كنسبة من الإيرادات)", "incomeStatement");
-    buildTable("قائمة المركز المالي (كنسبة من إجمالي الأصول)", "balanceSheet");
+    buildTable("Income Statement (% of Revenue)", "قائمة الدخل (كنسبة من الإيرادات)", "incomeStatement");
+    buildTable("Balance Sheet (% of Total Assets)", "قائمة المركز المالي (كنسبة من إجمالي الأصول)", "balanceSheet");
 
     var chartCard = el("div", { class: "chart-card" }, [
-      el("h4", { text: "تكوين الأصول عبر الفترات (%)" }),
+      biH("h4", "Asset Composition Over Periods (%)", "تكوين الأصول عبر الفترات (%)"),
       el("div", { class: "chart-wrap" }, [el("canvas", { id: "verticalChartCanvas" })])
     ]);
     container.appendChild(chartCard);
@@ -274,23 +290,23 @@ window.FA = window.FA || {};
   function renderHorizontalTab() {
     var container = document.getElementById("horizontalContent");
     var periods = FA.Store.getPeriods();
-    if (periods.length === 0) { emptyState(container, "أدخل بيانات أولاً من تبويب \"إدخال البيانات\"."); return; }
-    if (periods.length < 2) { emptyState(container, "التحليل الأفقي يحتاج فترتين على الأقل للمقارنة."); return; }
+    if (periods.length === 0) { emptyState(container, NO_DATA_MSG.en, NO_DATA_MSG.ar); return; }
+    if (periods.length < 2) { emptyState(container, "Horizontal analysis needs at least two periods to compare.", "التحليل الأفقي يحتاج فترتين على الأقل للمقارنة."); return; }
 
     var horizontal = FA.Analysis.computeHorizontal();
     container.innerHTML = "";
 
-    function buildTable(title, list) {
-      container.appendChild(el("h3", { text: title }));
+    function buildTable(en, ar, list) {
+      container.appendChild(biH("h3", en, ar));
       var table = el("table");
       var head = el("tr");
-      head.appendChild(el("th", { class: "label-cell", text: "البند" }));
+      head.appendChild(biTh("Item", "البند"));
       horizontal.periods.forEach(function (p) { head.appendChild(el("th", { text: p.label })); });
       table.appendChild(head);
 
       list.forEach(function (item) {
         var tr = el("tr");
-        tr.appendChild(el("td", { class: "label-cell", text: item.label }));
+        tr.appendChild(el("td", { class: "label-cell" }, [biEl("span", item.labelEn, item.label)]));
         item.series.forEach(function (s, idx) {
           var txt = fmtNum(s.value);
           if (idx > 0 && s.changePct !== null) {
@@ -304,11 +320,11 @@ window.FA = window.FA || {};
       container.appendChild(table);
     }
 
-    buildTable("قائمة الدخل - التغير عبر الفترات", horizontal.incomeStatement);
-    buildTable("قائمة المركز المالي - التغير عبر الفترات", horizontal.balanceSheet);
+    buildTable("Income Statement - Change Over Periods", "قائمة الدخل - التغير عبر الفترات", horizontal.incomeStatement);
+    buildTable("Balance Sheet - Change Over Periods", "قائمة المركز المالي - التغير عبر الفترات", horizontal.balanceSheet);
 
     var chartCard = el("div", { class: "chart-card" }, [
-      el("h4", { text: "الرقم القياسي (أساس = 100) للإيرادات وصافي الربح وإجمالي الأصول" }),
+      biH("h4", "Index (base = 100) for Revenue, Net Income & Total Assets", "الرقم القياسي (أساس = 100) للإيرادات وصافي الربح وإجمالي الأصول"),
       el("div", { class: "chart-wrap" }, [el("canvas", { id: "horizontalChartCanvas" })])
     ]);
     container.appendChild(chartCard);
@@ -321,38 +337,39 @@ window.FA = window.FA || {};
   function renderCCCTab() {
     var container = document.getElementById("cccContent");
     var periods = FA.Store.getPeriods();
-    if (periods.length === 0) { emptyState(container, "أدخل بيانات أولاً من تبويب \"إدخال البيانات\"."); return; }
+    if (periods.length === 0) { emptyState(container, NO_DATA_MSG.en, NO_DATA_MSG.ar); return; }
 
     var allRatios = FA.Analysis.computeAllRatios();
     container.innerHTML = "";
 
-    container.appendChild(el("p", { class: "hint", text: "دورة التحويل النقدي (CCC) = فترة تخزين المخزون (DIO) + فترة تحصيل العملاء (DSO) - فترة سداد الموردين (DPO)" }));
+    container.appendChild(el("p", { class: "hint" }, [biEl("span",
+      "Cash Conversion Cycle (CCC) = Days Inventory Outstanding (DIO) + Days Sales Outstanding (DSO) − Days Payable Outstanding (DPO)",
+      "دورة التحويل النقدي (CCC) = فترة تخزين المخزون (DIO) + فترة تحصيل العملاء (DSO) - فترة سداد الموردين (DPO)"
+    )]));
 
     var table = el("table");
-    var head = el("tr", null, [
-      el("th", { class: "label-cell", text: "المؤشر" })
-    ]);
+    var head = el("tr", null, [biTh("Indicator", "المؤشر")]);
     allRatios.forEach(function (r) { head.appendChild(el("th", { text: r.periodLabel })); });
     table.appendChild(head);
 
     [
-      { key: "dio", label: "فترة تخزين المخزون (DIO)" },
-      { key: "dso", label: "فترة تحصيل العملاء (DSO)" },
-      { key: "dpo", label: "فترة سداد الموردين (DPO)" },
-      { key: "ccc", label: "دورة التحويل النقدي (CCC)" }
+      { key: "dio", en: "Days Inventory Outstanding (DIO)", ar: "فترة تخزين المخزون (DIO)" },
+      { key: "dso", en: "Days Sales Outstanding (DSO)", ar: "فترة تحصيل العملاء (DSO)" },
+      { key: "dpo", en: "Days Payable Outstanding (DPO)", ar: "فترة سداد الموردين (DPO)" },
+      { key: "ccc", en: "Cash Conversion Cycle (CCC)", ar: "دورة التحويل النقدي (CCC)" }
     ].forEach(function (row) {
       var tr = el("tr", row.key === "ccc" ? { class: "computed-row" } : null);
-      tr.appendChild(el("td", { class: "label-cell", text: row.label }));
+      tr.appendChild(el("td", { class: "label-cell" }, [biEl("span", row.en, row.ar)]));
       allRatios.forEach(function (r) {
         var v = r.ccc[row.key];
-        tr.appendChild(el("td", { text: v !== null ? fmtNum(v, 0) + " يوم" : "—" }));
+        tr.appendChild(el("td", { text: v !== null ? fmtNum(v, 0) + " d" : "—" }));
       });
       table.appendChild(tr);
     });
     container.appendChild(table);
 
     var chartCard = el("div", { class: "chart-card" }, [
-      el("h4", { text: "دورة التحويل النقدي عبر الفترات" }),
+      biH("h4", "Cash Conversion Cycle Over Periods", "دورة التحويل النقدي عبر الفترات"),
       el("div", { class: "chart-wrap" }, [el("canvas", { id: "cccChartCanvas" })])
     ]);
     container.appendChild(chartCard);
@@ -365,30 +382,36 @@ window.FA = window.FA || {};
   function renderSummaryTab() {
     var container = document.getElementById("summaryContent");
     var periods = FA.Store.getPeriods();
-    if (periods.length === 0) { emptyState(container, "أدخل بيانات أولاً من تبويب \"إدخال البيانات\"."); return; }
+    if (periods.length === 0) { emptyState(container, NO_DATA_MSG.en, NO_DATA_MSG.ar); return; }
 
     var result = FA.Narrative.generate();
     container.innerHTML = "";
-    if (!result) { emptyState(container, "لا توجد بيانات كافية لإنشاء الخلاصة."); return; }
+    if (!result) { emptyState(container, "Not enough data to generate a summary.", "لا توجد بيانات كافية لإنشاء الخلاصة."); return; }
 
-    container.appendChild(el("div", { class: "rating-badge " + result.rating, text: result.ratingText + " - فترة " + result.periodLabel }));
+    container.appendChild(el("div", { class: "rating-badge " + result.rating }, [
+      biEl("span", result.ratingText.en + " - Period " + result.periodLabel, result.ratingText.ar + " - فترة " + result.periodLabel)
+    ]));
 
     var summaryDiv = el("div", { class: "summary-paragraphs" });
-    result.summaryParagraphs.forEach(function (p) { summaryDiv.appendChild(el("p", { text: p })); });
+    result.summaryParagraphs.forEach(function (p) {
+      summaryDiv.appendChild(el("p", null, [biEl("span", p.en, p.ar)]));
+    });
     container.appendChild(summaryDiv);
 
     var swColumns = el("div", { class: "sw-columns" });
-    var strengthsCol = el("div", { class: "sw-col strengths" }, [el("h4", { text: "نقاط القوة" })]);
+    var strengthsCol = el("div", { class: "sw-col strengths" }, [biH("h4", "Strengths", "نقاط القوة")]);
     var strengthsList = el("ul");
-    (result.strengths.length ? result.strengths : ["لا توجد نقاط قوة بارزة حسب المعايير العامة المستخدمة."]).forEach(function (s) {
-      strengthsList.appendChild(el("li", { text: s }));
+    var strengthItems = result.strengths.length ? result.strengths : [{ en: "No notable strengths under the general benchmarks used.", ar: "لا توجد نقاط قوة بارزة حسب المعايير العامة المستخدمة." }];
+    strengthItems.forEach(function (s) {
+      strengthsList.appendChild(el("li", null, [biEl("span", s.en, s.ar)]));
     });
     strengthsCol.appendChild(strengthsList);
 
-    var weaknessesCol = el("div", { class: "sw-col weaknesses" }, [el("h4", { text: "نقاط الضعف" })]);
+    var weaknessesCol = el("div", { class: "sw-col weaknesses" }, [biH("h4", "Weaknesses", "نقاط الضعف")]);
     var weaknessesList = el("ul");
-    (result.weaknesses.length ? result.weaknesses : ["لا توجد نقاط ضعف بارزة حسب المعايير العامة المستخدمة."]).forEach(function (s) {
-      weaknessesList.appendChild(el("li", { text: s }));
+    var weaknessItems = result.weaknesses.length ? result.weaknesses : [{ en: "No notable weaknesses under the general benchmarks used.", ar: "لا توجد نقاط ضعف بارزة حسب المعايير العامة المستخدمة." }];
+    weaknessItems.forEach(function (s) {
+      weaknessesList.appendChild(el("li", null, [biEl("span", s.en, s.ar)]));
     });
     weaknessesCol.appendChild(weaknessesList);
 
@@ -397,9 +420,9 @@ window.FA = window.FA || {};
     container.appendChild(swColumns);
 
     if (result.watchPoints.length) {
-      var watchDiv = el("div", { class: "watch-list" }, [el("h4", { text: "نقاط تحتاج متابعة" })]);
+      var watchDiv = el("div", { class: "watch-list" }, [biH("h4", "Points to Watch", "نقاط تحتاج متابعة")]);
       var watchList = el("ul");
-      result.watchPoints.forEach(function (s) { watchList.appendChild(el("li", { text: s })); });
+      result.watchPoints.forEach(function (s) { watchList.appendChild(el("li", null, [biEl("span", s.en, s.ar)])); });
       watchDiv.appendChild(watchList);
       container.appendChild(watchDiv);
     }
@@ -416,14 +439,14 @@ window.FA = window.FA || {};
     input.addEventListener("change", function () {
       var file = input.files[0];
       if (!file) return;
-      status.textContent = "جاري قراءة الملف...";
+      status.textContent = bi("Reading file...", "جاري قراءة الملف...");
       status.className = "mapping-status";
       FA.ExcelImport.parseFile(file).then(function (workbook) {
         status.textContent = "";
         mappingContainer.innerHTML = "";
         var sheetNames = workbook.SheetNames;
         var sheetSelectWrap = el("div", { class: "mapping-section" });
-        sheetSelectWrap.appendChild(el("h4", { text: "اختر الورقة (Sheet)" }));
+        sheetSelectWrap.appendChild(biH("h4", "Select Sheet", "اختر الورقة (Sheet)"));
         var sheetSelect = el("select");
         sheetNames.forEach(function (name) { sheetSelect.appendChild(el("option", { value: name, text: name })); });
         sheetSelectWrap.appendChild(sheetSelect);
@@ -442,7 +465,7 @@ window.FA = window.FA || {};
         sheetSelect.addEventListener("change", loadSheet);
         loadSheet();
       }).catch(function (err) {
-        status.textContent = "خطأ: " + err.message;
+        status.textContent = bi("Error: " + err.message, "خطأ: " + err.message);
         status.className = "mapping-status error";
       });
     });
@@ -462,7 +485,7 @@ window.FA = window.FA || {};
       window.print();
     });
     document.getElementById("btnReset").addEventListener("click", function () {
-      if (confirm("هل تريد مسح كل البيانات المدخلة؟ لا يمكن التراجع عن هذا الإجراء.")) {
+      if (confirm("Clear all entered data? This cannot be undone. / هل تريد مسح كل البيانات المدخلة؟ لا يمكن التراجع عن هذا الإجراء.")) {
         FA.Store.reset();
         renderManualTable();
         renderTab(document.querySelector(".tab-btn.active").dataset.tab);

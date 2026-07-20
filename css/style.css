@@ -1,4 +1,4 @@
-/* style.css - واجهة عربية RTL لبرنامج التحليل المالي */
+/* style.css - Financial Analysis App UI (English primary, Arabic translation) */
 
 :root {
   color-scheme: light;
@@ -71,6 +71,18 @@ html, body {
 }
 
 h1, h2, h3, h4, h5 { margin: 0 0 .5em; }
+
+/* ---------- ثنائية اللغة: إنجليزي أساسي + عربي أصغر تحته ---------- */
+.bi-label { display: inline-block; max-width: 100%; }
+.bi-label .lbl-en { display: block; }
+.bi-label .lbl-ar {
+  display: block;
+  font-size: .76em;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-top: 1px;
+}
 
 .app-header {
   background: var(--surface-card);
@@ -179,13 +191,13 @@ th, td { border: 1px solid var(--grid); padding: 7px 10px; text-align: center; w
 th { background: var(--surface-2); color: var(--text-secondary); font-weight: 600; }
 
 .manual-table td.label-cell, .manual-table th.label-cell {
-  text-align: right;
+  text-align: left;
   position: sticky;
-  right: 0;
+  left: 0;
   background: var(--surface-card);
   min-width: 220px;
 }
-.manual-table tr.section-row td { background: var(--surface-2); font-weight: 700; text-align: right; color: var(--text-secondary); }
+.manual-table tr.section-row td { background: var(--surface-2); font-weight: 700; text-align: left; color: var(--text-secondary); }
 .manual-table tr.computed-row td.label-cell { font-weight: 600; }
 .manual-table input[type="number"], .manual-table input[type="text"] {
   width: 130px;
@@ -243,7 +255,7 @@ input.period-label-input { padding: 6px 8px; border-radius: 6px; border: 1px sol
 .ratio-table td.flag-watch { color: var(--warning); font-weight: 700; background: var(--warning-bg); }
 .ratio-table td.flag-poor { color: var(--critical); font-weight: 700; background: var(--critical-bg); }
 .ratio-table td.flag-na { color: var(--text-muted); }
-.ratio-table th.label-cell, .ratio-table td.label-cell { text-align: right; min-width: 220px; }
+.ratio-table th.label-cell, .ratio-table td.label-cell { text-align: left; min-width: 220px; }
 
 .chart-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 16px 0; }
 .chart-wrap { position: relative; height: 320px; }

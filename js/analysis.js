@@ -79,46 +79,50 @@ window.FA = window.FA || {};
       groups: [
         {
           key: "liquidity",
+          titleEn: "Liquidity Ratios",
           title: "نسب السيولة",
           ratios: [
-            { key: "currentRatio", label: "نسبة التداول", value: currentRatio, fmt: "x", flag: classify(currentRatio, 1.5, 1.0, true) },
-            { key: "quickRatio", label: "النسبة السريعة", value: quickRatio, fmt: "x", flag: classify(quickRatio, 1.0, 0.7, true) },
-            { key: "cashRatio", label: "نسبة النقدية", value: cashRatio, fmt: "x", flag: classify(cashRatio, 0.2, 0.1, true) },
-            { key: "workingCapital", label: "رأس المال العامل", value: workingCapital, fmt: "num", flag: workingCapital >= 0 ? "good" : "poor" }
+            { key: "currentRatio", labelEn: "Current Ratio", label: "نسبة التداول", value: currentRatio, fmt: "x", flag: classify(currentRatio, 1.5, 1.0, true) },
+            { key: "quickRatio", labelEn: "Quick Ratio", label: "النسبة السريعة", value: quickRatio, fmt: "x", flag: classify(quickRatio, 1.0, 0.7, true) },
+            { key: "cashRatio", labelEn: "Cash Ratio", label: "نسبة النقدية", value: cashRatio, fmt: "x", flag: classify(cashRatio, 0.2, 0.1, true) },
+            { key: "workingCapital", labelEn: "Working Capital", label: "رأس المال العامل", value: workingCapital, fmt: "num", flag: workingCapital >= 0 ? "good" : "poor" }
           ]
         },
         {
           key: "activity",
+          titleEn: "Activity & Efficiency Ratios",
           title: "نسب النشاط والكفاءة",
           ratios: [
-            { key: "inventoryTurnover", label: "معدل دوران المخزون", value: inventoryTurnover, fmt: "x" },
-            { key: "dio", label: "متوسط فترة تخزين المخزون (DIO)", value: dio, fmt: "days" },
-            { key: "receivableTurnover", label: "معدل دوران العملاء", value: receivableTurnover, fmt: "x" },
-            { key: "dso", label: "متوسط فترة تحصيل العملاء (DSO)", value: dso, fmt: "days" },
-            { key: "payableTurnover", label: "معدل دوران الموردين", value: payableTurnover, fmt: "x" },
-            { key: "dpo", label: "متوسط فترة سداد الموردين (DPO)", value: dpo, fmt: "days" },
-            { key: "assetTurnover", label: "معدل دوران الأصول", value: assetTurnover, fmt: "x" }
+            { key: "inventoryTurnover", labelEn: "Inventory Turnover", label: "معدل دوران المخزون", value: inventoryTurnover, fmt: "x" },
+            { key: "dio", labelEn: "Days Inventory Outstanding (DIO)", label: "متوسط فترة تخزين المخزون (DIO)", value: dio, fmt: "days" },
+            { key: "receivableTurnover", labelEn: "Receivables Turnover", label: "معدل دوران العملاء", value: receivableTurnover, fmt: "x" },
+            { key: "dso", labelEn: "Days Sales Outstanding (DSO)", label: "متوسط فترة تحصيل العملاء (DSO)", value: dso, fmt: "days" },
+            { key: "payableTurnover", labelEn: "Payables Turnover", label: "معدل دوران الموردين", value: payableTurnover, fmt: "x" },
+            { key: "dpo", labelEn: "Days Payable Outstanding (DPO)", label: "متوسط فترة سداد الموردين (DPO)", value: dpo, fmt: "days" },
+            { key: "assetTurnover", labelEn: "Asset Turnover", label: "معدل دوران الأصول", value: assetTurnover, fmt: "x" }
           ]
         },
         {
           key: "profitability",
+          titleEn: "Profitability Ratios",
           title: "نسب الربحية",
           ratios: [
-            { key: "grossMargin", label: "هامش مجمل الربح", value: grossMargin, fmt: "pct", flag: classify(grossMargin, 0.30, 0.10, true) },
-            { key: "operatingMargin", label: "هامش الربح التشغيلي", value: operatingMargin, fmt: "pct", flag: classify(operatingMargin, 0.15, 0.05, true) },
-            { key: "netMargin", label: "هامش صافي الربح", value: netMargin, fmt: "pct", flag: classify(netMargin, 0.10, 0.0, true) },
-            { key: "roa", label: "العائد على الأصول (ROA)", value: roa, fmt: "pct", flag: classify(roa, 0.05, 0.0, true) },
-            { key: "roe", label: "العائد على حقوق الملكية (ROE)", value: roe, fmt: "pct", flag: classify(roe, 0.15, 0.0, true) }
+            { key: "grossMargin", labelEn: "Gross Profit Margin", label: "هامش مجمل الربح", value: grossMargin, fmt: "pct", flag: classify(grossMargin, 0.30, 0.10, true) },
+            { key: "operatingMargin", labelEn: "Operating Margin", label: "هامش الربح التشغيلي", value: operatingMargin, fmt: "pct", flag: classify(operatingMargin, 0.15, 0.05, true) },
+            { key: "netMargin", labelEn: "Net Profit Margin", label: "هامش صافي الربح", value: netMargin, fmt: "pct", flag: classify(netMargin, 0.10, 0.0, true) },
+            { key: "roa", labelEn: "Return on Assets (ROA)", label: "العائد على الأصول (ROA)", value: roa, fmt: "pct", flag: classify(roa, 0.05, 0.0, true) },
+            { key: "roe", labelEn: "Return on Equity (ROE)", label: "العائد على حقوق الملكية (ROE)", value: roe, fmt: "pct", flag: classify(roe, 0.15, 0.0, true) }
           ]
         },
         {
           key: "leverage",
+          titleEn: "Leverage & Solvency Ratios",
           title: "نسب المديونية والملاءة",
           ratios: [
-            { key: "debtRatio", label: "نسبة إجمالي الدين إلى الأصول", value: debtRatio, fmt: "pct", flag: classify(debtRatio, 0.5, 0.7, false) },
-            { key: "debtToEquity", label: "نسبة الدين إلى حقوق الملكية", value: debtToEquity, fmt: "x", flag: classify(debtToEquity, 1.0, 2.0, false) },
-            { key: "equityRatio", label: "نسبة حقوق الملكية إلى الأصول", value: equityRatio, fmt: "pct" },
-            { key: "interestCoverage", label: "معدل تغطية الفوائد", value: interestCoverage, fmt: "x", flag: classify(interestCoverage, 4, 1.5, true) }
+            { key: "debtRatio", labelEn: "Total Debt to Assets", label: "نسبة إجمالي الدين إلى الأصول", value: debtRatio, fmt: "pct", flag: classify(debtRatio, 0.5, 0.7, false) },
+            { key: "debtToEquity", labelEn: "Debt to Equity", label: "نسبة الدين إلى حقوق الملكية", value: debtToEquity, fmt: "x", flag: classify(debtToEquity, 1.0, 2.0, false) },
+            { key: "equityRatio", labelEn: "Equity to Assets", label: "نسبة حقوق الملكية إلى الأصول", value: equityRatio, fmt: "pct" },
+            { key: "interestCoverage", labelEn: "Interest Coverage Ratio", label: "معدل تغطية الفوائد", value: interestCoverage, fmt: "x", flag: classify(interestCoverage, 4, 1.5, true) }
           ]
         }
       ],
@@ -144,6 +148,7 @@ window.FA = window.FA || {};
         return {
           key: item.key,
           label: item.label,
+          labelEn: item.labelEn,
           value: v[item.key],
           pct: safeDiv(v[item.key], v.revenue)
         };
@@ -152,6 +157,7 @@ window.FA = window.FA || {};
         return {
           key: item.key,
           label: item.label,
+          labelEn: item.labelEn,
           value: v[item.key],
           pct: safeDiv(v[item.key], v.totalAssets)
         };
@@ -187,7 +193,7 @@ window.FA = window.FA || {};
             index: indexVal
           };
         });
-        return { key: item.key, label: item.label, series: series };
+        return { key: item.key, label: item.label, labelEn: item.labelEn, series: series };
       });
     }
 
@@ -223,7 +229,7 @@ window.FA = window.FA || {};
       case "x":
         return fmtNum(ratio.value, 2) + "×";
       case "days":
-        return fmtNum(ratio.value, 0) + " يوم";
+        return fmtNum(ratio.value, 0) + " d";
       default:
         return fmtNum(ratio.value, 0);
     }

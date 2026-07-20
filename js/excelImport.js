@@ -148,6 +148,7 @@ window.FA = window.FA || {};
 
   function renderMappingUI(container, rows, onApply) {
     container.innerHTML = "";
+    var bi = FA.util.biStr;
     var suggestions = suggestMapping(rows);
     var maxCols = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0);
 
@@ -165,32 +166,31 @@ window.FA = window.FA || {};
     }
     previewWrap.appendChild(table);
     if (rows.length > previewRowCount) {
-      previewWrap.appendChild(el("p", { class: "hint", text: "... ويوجد " + (rows.length - previewRowCount) + " صف إضافي في الملف" }));
+      previewWrap.appendChild(el("p", { class: "hint", text: bi((rows.length - previewRowCount) + " more row(s) in the file...", "ويوجد " + (rows.length - previewRowCount) + " صف إضافي في الملف") }));
     }
 
     // ---- تحديد أعمدة الفترات ----
-    var periodsSection = el("div", { class: "mapping-section" }, [
-      el("h4", { text: "الخطوة 1: حدد أعمدة الفترات (السنوات)" }),
-      el("p", { class: "hint", text: "اختر رقم كل عمود يمثل فترة/سنة، وسمّها." })
-    ]);
+    var periodsSection = el("div", { class: "mapping-section" });
+    periodsSection.appendChild(el("h4", null, [FA.util.biEl("span", "Step 1: Select the period (year) columns", "الخطوة 1: حدد أعمدة الفترات (السنوات)")]));
+    periodsSection.appendChild(el("p", { class: "hint", text: bi("Choose which column represents each period/year, and name it.", "اختر رقم كل عمود يمثل فترة/سنة، وسمّها.") }));
     var periodRowsContainer = el("div", { class: "period-rows" });
     var periodEntries = [];
 
     function addPeriodRow(defaultCol) {
       var idx = periodEntries.length;
       var colSelect = el("select", { class: "col-select" });
-      colSelect.appendChild(el("option", { value: "-1", text: "-- اختر عمود --" }));
+      colSelect.appendChild(el("option", { value: "-1", text: bi("-- Select a column --", "اختر عمود") }));
       for (var c = 0; c < maxCols; c++) {
         var headerGuess = rows[0] && rows[0][c] !== undefined ? String(rows[0][c]) : "";
-        colSelect.appendChild(el("option", { value: String(c), text: "عمود " + (c + 1) + (headerGuess ? " (" + headerGuess + ")" : "") }));
+        colSelect.appendChild(el("option", { value: String(c), text: bi("Column " + (c + 1), "عمود " + (c + 1)) + (headerGuess ? " (" + headerGuess + ")" : "") }));
       }
       if (defaultCol !== undefined && defaultCol >= 0) colSelect.value = String(defaultCol);
 
-      var labelInput = el("input", { type: "text", class: "period-label-input", placeholder: "مثال: 2024" });
+      var labelInput = el("input", { type: "text", class: "period-label-input", placeholder: "e.g. 2024" });
       var headerVal = defaultCol !== undefined && rows[0] ? rows[0][defaultCol] : "";
-      labelInput.value = headerVal ? String(headerVal) : ("فترة " + (idx + 1));
+      labelInput.value = headerVal ? String(headerVal) : ("Period " + (idx + 1));
 
-      var removeBtn = el("button", { type: "button", class: "btn-small btn-danger", text: "حذف" });
+      var removeBtn = el("button", { type: "button", class: "btn-small btn-danger remove-period-btn", text: bi("Remove", "حذف") });
       var row = el("div", { class: "period-row" }, [colSelect, labelInput, removeBtn]);
       removeBtn.addEventListener("click", function () {
         row.remove();
@@ -210,42 +210,43 @@ window.FA = window.FA || {};
     if (suggestedCols.length === 0) suggestedCols = [1];
     suggestedCols.forEach(function (c) { addPeriodRow(c); });
 
-    var addPeriodBtn = el("button", { type: "button", class: "btn-small", text: "+ إضافة عمود فترة" });
+    var addPeriodBtn = el("button", { type: "button", class: "btn-small", text: bi("+ Add period column", "+ إضافة عمود فترة") });
     addPeriodBtn.addEventListener("click", function () { addPeriodRow(); });
 
     periodsSection.appendChild(periodRowsContainer);
     periodsSection.appendChild(addPeriodBtn);
 
     // ---- مطابقة بنود القوائم المالية ----
-    var itemsSection = el("div", { class: "mapping-section" }, [
-      el("h4", { text: "الخطوة 2: طابق بنود القوائم المالية بصفوف الملف" }),
-      el("p", { class: "hint", text: "تم اقتراح أقرب تطابق تلقائيًا حيث أمكن - راجع وعدّل حسب الحاجة." })
-    ]);
+    var itemsSection = el("div", { class: "mapping-section" });
+    itemsSection.appendChild(el("h4", null, [FA.util.biEl("span", "Step 2: Match line items to file rows", "الخطوة 2: طابق بنود القوائم المالية بصفوف الملف")]));
+    itemsSection.appendChild(el("p", { class: "hint", text: bi("The closest match was suggested automatically where possible - review and adjust as needed.", "تم اقتراح أقرب تطابق تلقائيًا حيث أمكن - راجع وعدّل حسب الحاجة.") }));
 
     var itemSelects = {};
 
     function buildItemRow(item) {
       var select = el("select", { class: "row-select", "data-key": item.key });
-      select.appendChild(el("option", { value: "-1", text: "-- بدون مطابقة (يعتبر صفر) --" }));
+      select.appendChild(el("option", { value: "-1", text: bi("-- No match (treated as zero) --", "بدون مطابقة (يعتبر صفر)") }));
       rows.forEach(function (row, idx) {
         var label = rowLabel(row);
-        select.appendChild(el("option", { value: String(idx), text: "صف " + (idx + 1) + ": " + label.substring(0, 40) }));
+        select.appendChild(el("option", { value: String(idx), text: bi("Row " + (idx + 1), "صف " + (idx + 1)) + ": " + label.substring(0, 40) }));
       });
       var suggIdx = suggestions[item.key];
       if (suggIdx !== undefined && suggIdx >= 0) select.value = String(suggIdx);
       itemSelects[item.key] = select;
       return el("div", { class: "item-map-row" }, [
-        el("span", { class: "item-map-label", text: item.label }),
+        FA.util.biEl("span", item.labelEn, item.label, "item-map-label"),
         select
       ]);
     }
 
-    var isGroup = el("div", { class: "item-group" }, [el("h5", { text: "قائمة الدخل" })]);
+    var isGroup = el("div", { class: "item-group" });
+    isGroup.appendChild(el("h5", null, [FA.util.biEl("span", "Income Statement", "قائمة الدخل")]));
     FA.itemDefs.incomeStatement.filter(function (i) { return i.editable; }).forEach(function (item) {
       isGroup.appendChild(buildItemRow(item));
     });
 
-    var bsGroup = el("div", { class: "item-group" }, [el("h5", { text: "قائمة المركز المالي" })]);
+    var bsGroup = el("div", { class: "item-group" });
+    bsGroup.appendChild(el("h5", null, [FA.util.biEl("span", "Balance Sheet", "قائمة المركز المالي")]));
     FA.itemDefs.balanceSheet.filter(function (i) { return i.editable; }).forEach(function (item) {
       bsGroup.appendChild(buildItemRow(item));
     });
@@ -254,18 +255,18 @@ window.FA = window.FA || {};
     itemsSection.appendChild(bsGroup);
 
     // ---- زر التأكيد ----
-    var applyBtn = el("button", { type: "button", class: "btn btn-primary", text: "تطبيق المطابقة واستيراد البيانات" });
+    var applyBtn = el("button", { type: "button", class: "btn btn-primary", text: bi("Apply Mapping & Import Data", "تطبيق المطابقة واستيراد البيانات") });
     var statusMsg = el("div", { class: "mapping-status" });
 
     applyBtn.addEventListener("click", function () {
       var periodsConfig = periodEntries
         .map(function (pe) {
-          return { col: parseInt(pe.colSelect.value, 10), label: pe.labelInput.value.trim() || "فترة" };
+          return { col: parseInt(pe.colSelect.value, 10), label: pe.labelInput.value.trim() || "Period" };
         })
         .filter(function (p) { return p.col >= 0; });
 
       if (periodsConfig.length === 0) {
-        statusMsg.textContent = "من فضلك اختر عمود فترة واحد على الأقل.";
+        statusMsg.textContent = bi("Please select at least one period column.", "من فضلك اختر عمود فترة واحد على الأقل.");
         statusMsg.className = "mapping-status error";
         return;
       }
@@ -277,12 +278,15 @@ window.FA = window.FA || {};
       });
 
       var result = applyMapping(rows, periodsConfig, itemMapping);
-      statusMsg.textContent = "تم استيراد " + result.periodsCreated + " فترة بنجاح. يمكنك مراجعة القيم وتعديلها في تبويب الإدخال اليدوي.";
+      statusMsg.textContent = bi(
+        "Imported " + result.periodsCreated + " period(s) successfully. You can review and edit the values in the Manual Entry tab.",
+        "تم استيراد " + result.periodsCreated + " فترة بنجاح. يمكنك مراجعة القيم وتعديلها في تبويب الإدخال اليدوي."
+      );
       statusMsg.className = "mapping-status success";
       if (onApply) onApply(result);
     });
 
-    container.appendChild(el("h3", { text: "معاينة الملف" }));
+    container.appendChild(el("h3", null, [FA.util.biEl("span", "File Preview", "معاينة الملف")]));
     container.appendChild(previewWrap);
     container.appendChild(periodsSection);
     container.appendChild(itemsSection);

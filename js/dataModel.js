@@ -13,16 +13,16 @@ window.FA = window.FA || {};
   // تعريف بنود قائمة الدخل
   // ---------------------------------------------------------------------
   var incomeStatement = [
-    { key: "revenue", label: "الإيرادات", editable: true },
-    { key: "cogs", label: "تكلفة المبيعات", editable: true },
-    { key: "grossProfit", label: "مجمل الربح", computed: true },
-    { key: "opex", label: "المصاريف التشغيلية (بيع وإدارة وعمومية)", editable: true },
-    { key: "depreciation", label: "الإهلاك والاستهلاك", editable: true },
-    { key: "operatingIncome", label: "الربح التشغيلي (EBIT)", computed: true },
-    { key: "interestExpense", label: "مصروفات الفوائد", editable: true },
-    { key: "otherIncomeExpense", label: "إيرادات / (مصروفات) أخرى", editable: true },
-    { key: "incomeTax", label: "ضريبة الدخل", editable: true },
-    { key: "netIncome", label: "صافي الربح", computed: true }
+    { key: "revenue", labelEn: "Revenue", label: "الإيرادات", editable: true },
+    { key: "cogs", labelEn: "Cost of Goods Sold (COGS)", label: "تكلفة المبيعات", editable: true },
+    { key: "grossProfit", labelEn: "Gross Profit", label: "مجمل الربح", computed: true },
+    { key: "opex", labelEn: "Operating Expenses (SG&A)", label: "المصاريف التشغيلية (بيع وإدارة وعمومية)", editable: true },
+    { key: "depreciation", labelEn: "Depreciation & Amortization", label: "الإهلاك والاستهلاك", editable: true },
+    { key: "operatingIncome", labelEn: "Operating Income (EBIT)", label: "الربح التشغيلي (EBIT)", computed: true },
+    { key: "interestExpense", labelEn: "Interest Expense", label: "مصروفات الفوائد", editable: true },
+    { key: "otherIncomeExpense", labelEn: "Other Income / (Expense)", label: "إيرادات / (مصروفات) أخرى", editable: true },
+    { key: "incomeTax", labelEn: "Income Tax", label: "ضريبة الدخل", editable: true },
+    { key: "netIncome", labelEn: "Net Income", label: "صافي الربح", computed: true }
   ];
 
   // ---------------------------------------------------------------------
@@ -30,29 +30,29 @@ window.FA = window.FA || {};
   // ---------------------------------------------------------------------
   var balanceSheet = [
     // الأصول المتداولة
-    { key: "cash", label: "النقدية وما في حكمها", editable: true, section: "currentAssets" },
-    { key: "accountsReceivable", label: "العملاء (ذمم مدينة)", editable: true, section: "currentAssets" },
-    { key: "inventory", label: "المخزون", editable: true, section: "currentAssets" },
-    { key: "otherCurrentAssets", label: "أصول متداولة أخرى", editable: true, section: "currentAssets" },
-    { key: "totalCurrentAssets", label: "إجمالي الأصول المتداولة", computed: true, section: "currentAssets" },
+    { key: "cash", labelEn: "Cash & Cash Equivalents", label: "النقدية وما في حكمها", editable: true, section: "currentAssets" },
+    { key: "accountsReceivable", labelEn: "Accounts Receivable", label: "العملاء (ذمم مدينة)", editable: true, section: "currentAssets" },
+    { key: "inventory", labelEn: "Inventory", label: "المخزون", editable: true, section: "currentAssets" },
+    { key: "otherCurrentAssets", labelEn: "Other Current Assets", label: "أصول متداولة أخرى", editable: true, section: "currentAssets" },
+    { key: "totalCurrentAssets", labelEn: "Total Current Assets", label: "إجمالي الأصول المتداولة", computed: true, section: "currentAssets" },
     // الأصول غير المتداولة
-    { key: "netFixedAssets", label: "الأصول الثابتة (صافي)", editable: true, section: "nonCurrentAssets" },
-    { key: "otherNonCurrentAssets", label: "أصول غير متداولة أخرى", editable: true, section: "nonCurrentAssets" },
-    { key: "totalAssets", label: "إجمالي الأصول", computed: true, section: "totals" },
+    { key: "netFixedAssets", labelEn: "Fixed Assets (Net)", label: "الأصول الثابتة (صافي)", editable: true, section: "nonCurrentAssets" },
+    { key: "otherNonCurrentAssets", labelEn: "Other Non-Current Assets", label: "أصول غير متداولة أخرى", editable: true, section: "nonCurrentAssets" },
+    { key: "totalAssets", labelEn: "Total Assets", label: "إجمالي الأصول", computed: true, section: "totals" },
     // الخصوم المتداولة
-    { key: "accountsPayable", label: "الموردون (ذمم دائنة)", editable: true, section: "currentLiabilities" },
-    { key: "shortTermDebt", label: "قروض قصيرة الأجل", editable: true, section: "currentLiabilities" },
-    { key: "otherCurrentLiabilities", label: "خصوم متداولة أخرى", editable: true, section: "currentLiabilities" },
-    { key: "totalCurrentLiabilities", label: "إجمالي الخصوم المتداولة", computed: true, section: "currentLiabilities" },
+    { key: "accountsPayable", labelEn: "Accounts Payable", label: "الموردون (ذمم دائنة)", editable: true, section: "currentLiabilities" },
+    { key: "shortTermDebt", labelEn: "Short-Term Debt", label: "قروض قصيرة الأجل", editable: true, section: "currentLiabilities" },
+    { key: "otherCurrentLiabilities", labelEn: "Other Current Liabilities", label: "خصوم متداولة أخرى", editable: true, section: "currentLiabilities" },
+    { key: "totalCurrentLiabilities", labelEn: "Total Current Liabilities", label: "إجمالي الخصوم المتداولة", computed: true, section: "currentLiabilities" },
     // الخصوم غير المتداولة
-    { key: "longTermDebt", label: "قروض طويلة الأجل", editable: true, section: "nonCurrentLiabilities" },
-    { key: "otherNonCurrentLiabilities", label: "خصوم غير متداولة أخرى", editable: true, section: "nonCurrentLiabilities" },
-    { key: "totalLiabilities", label: "إجمالي الخصوم", computed: true, section: "totals" },
+    { key: "longTermDebt", labelEn: "Long-Term Debt", label: "قروض طويلة الأجل", editable: true, section: "nonCurrentLiabilities" },
+    { key: "otherNonCurrentLiabilities", labelEn: "Other Non-Current Liabilities", label: "خصوم غير متداولة أخرى", editable: true, section: "nonCurrentLiabilities" },
+    { key: "totalLiabilities", labelEn: "Total Liabilities", label: "إجمالي الخصوم", computed: true, section: "totals" },
     // حقوق الملكية
-    { key: "shareCapital", label: "رأس المال", editable: true, section: "equity" },
-    { key: "retainedEarnings", label: "الأرباح المحتجزة", editable: true, section: "equity" },
-    { key: "otherEquity", label: "حقوق ملكية أخرى", editable: true, section: "equity" },
-    { key: "totalEquity", label: "إجمالي حقوق الملكية", computed: true, section: "totals" }
+    { key: "shareCapital", labelEn: "Share Capital", label: "رأس المال", editable: true, section: "equity" },
+    { key: "retainedEarnings", labelEn: "Retained Earnings", label: "الأرباح المحتجزة", editable: true, section: "equity" },
+    { key: "otherEquity", labelEn: "Other Equity", label: "حقوق ملكية أخرى", editable: true, section: "equity" },
+    { key: "totalEquity", labelEn: "Total Equity", label: "إجمالي حقوق الملكية", computed: true, section: "totals" }
   ];
 
   FA.itemDefs = {
@@ -277,5 +277,31 @@ window.FA = window.FA || {};
   };
 
   FA.Store = Store;
-  FA.util = { num: num };
+
+  // ---------------------------------------------------------------------
+  // أدوات ثنائية اللغة: إنجليزي أساسي (أكبر) + عربي ترجمة (أصغر)
+  // ---------------------------------------------------------------------
+  function biEl(tag, en, ar, extraClass) {
+    var wrap = document.createElement(tag || "span");
+    wrap.className = "bi-label" + (extraClass ? " " + extraClass : "");
+    var enSpan = document.createElement("span");
+    enSpan.className = "lbl-en";
+    enSpan.textContent = en;
+    wrap.appendChild(enSpan);
+    if (ar) {
+      var arSpan = document.createElement("span");
+      arSpan.className = "lbl-ar";
+      arSpan.setAttribute("dir", "rtl");
+      arSpan.setAttribute("lang", "ar");
+      arSpan.textContent = ar;
+      wrap.appendChild(arSpan);
+    }
+    return wrap;
+  }
+
+  function biStr(en, ar) {
+    return ar ? en + " / " + ar : en;
+  }
+
+  FA.util = { num: num, biEl: biEl, biStr: biStr };
 })(window.FA);

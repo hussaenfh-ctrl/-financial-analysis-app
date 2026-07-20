@@ -48,18 +48,18 @@ window.FA = window.FA || {};
     if (typeof Chart === "undefined" || !verticalData.length) return;
 
     var itemsToShow = [
-      { key: "cash", label: "النقدية" },
-      { key: "accountsReceivable", label: "العملاء" },
-      { key: "inventory", label: "المخزون" },
-      { key: "otherCurrentAssets", label: "أصول متداولة أخرى" },
-      { key: "netFixedAssets", label: "أصول ثابتة" },
-      { key: "otherNonCurrentAssets", label: "أصول غير متداولة أخرى" }
+      { key: "cash", label: "Cash", labelAr: "النقدية" },
+      { key: "accountsReceivable", label: "Receivables", labelAr: "العملاء" },
+      { key: "inventory", label: "Inventory", labelAr: "المخزون" },
+      { key: "otherCurrentAssets", label: "Other Current Assets", labelAr: "أصول متداولة أخرى" },
+      { key: "netFixedAssets", label: "Fixed Assets", labelAr: "أصول ثابتة" },
+      { key: "otherNonCurrentAssets", label: "Other Non-Current Assets", labelAr: "أصول غير متداولة أخرى" }
     ];
 
     var labels = verticalData.map(function (d) { return d.periodLabel; });
     var datasets = itemsToShow.map(function (item, i) {
       return {
-        label: item.label,
+        label: FA.util.biStr(item.label, item.labelAr),
         data: verticalData.map(function (d) {
           var row = d.balanceSheet.find(function (r) { return r.key === item.key; });
           return row && row.pct !== null ? +(row.pct * 100).toFixed(1) : 0;
@@ -91,9 +91,9 @@ window.FA = window.FA || {};
     if (typeof Chart === "undefined" || !horizontalData.periods || horizontalData.periods.length < 2) return;
 
     var keyItems = [
-      { key: "revenue", label: "الإيرادات", list: horizontalData.incomeStatement },
-      { key: "netIncome", label: "صافي الربح", list: horizontalData.incomeStatement },
-      { key: "totalAssets", label: "إجمالي الأصول", list: horizontalData.balanceSheet }
+      { key: "revenue", label: "Revenue", labelAr: "الإيرادات", list: horizontalData.incomeStatement },
+      { key: "netIncome", label: "Net Income", labelAr: "صافي الربح", list: horizontalData.incomeStatement },
+      { key: "totalAssets", label: "Total Assets", labelAr: "إجمالي الأصول", list: horizontalData.balanceSheet }
     ];
 
     var labels = horizontalData.periods.map(function (p) { return p.label; });
@@ -101,7 +101,7 @@ window.FA = window.FA || {};
       var found = item.list.find(function (r) { return r.key === item.key; });
       var data = found ? found.series.map(function (s) { return s.index !== null ? +s.index.toFixed(1) : null; }) : [];
       return {
-        label: item.label,
+        label: FA.util.biStr(item.label, item.labelAr),
         data: data,
         borderColor: PALETTE[i],
         backgroundColor: PALETTE[i],
@@ -146,16 +146,16 @@ window.FA = window.FA || {};
       data: {
         labels: labels,
         datasets: [
-          { type: "bar", label: "فترة تخزين المخزون (DIO)", data: dio, backgroundColor: PALETTE[0], stack: "s" },
-          { type: "bar", label: "فترة تحصيل العملاء (DSO)", data: dso, backgroundColor: PALETTE[4], stack: "s" },
-          { type: "bar", label: "فترة سداد الموردين (DPO -)", data: dpo, backgroundColor: PALETTE[5], stack: "s" },
-          { type: "line", label: "صافي دورة التحويل النقدي (CCC)", data: ccc, borderColor: PALETTE[7], backgroundColor: PALETTE[7], borderWidth: 2, pointRadius: 4, tension: 0.15 }
+          { type: "bar", label: FA.util.biStr("Days Inventory Outstanding (DIO)", "فترة تخزين المخزون"), data: dio, backgroundColor: PALETTE[0], stack: "s" },
+          { type: "bar", label: FA.util.biStr("Days Sales Outstanding (DSO)", "فترة تحصيل العملاء"), data: dso, backgroundColor: PALETTE[4], stack: "s" },
+          { type: "bar", label: FA.util.biStr("Days Payable Outstanding (DPO -)", "فترة سداد الموردين"), data: dpo, backgroundColor: PALETTE[5], stack: "s" },
+          { type: "line", label: FA.util.biStr("Net Cash Conversion Cycle (CCC)", "صافي دورة التحويل النقدي"), data: ccc, borderColor: PALETTE[7], backgroundColor: PALETTE[7], borderWidth: 2, pointRadius: 4, tension: 0.15 }
         ]
       },
       options: baseOptions({
         scales: {
           x: { stacked: true, ticks: { color: MUTED }, grid: { display: false } },
-          y: { stacked: true, ticks: { color: MUTED, callback: function (v) { return v + " يوم"; } }, grid: { color: GRID } }
+          y: { stacked: true, ticks: { color: MUTED, callback: function (v) { return v + "d"; } }, grid: { color: GRID } }
         }
       })
     });

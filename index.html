@@ -1,43 +1,43 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>برنامج التحليل المالي</title>
+<title>Financial Analysis App</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="app-header">
   <div class="header-inner">
-    <h1>📊 برنامج التحليل المالي</h1>
+    <h1>📊 <span class="bi-label"><span class="lbl-en">Financial Analysis App</span><span class="lbl-ar" dir="rtl" lang="ar">برنامج التحليل المالي</span></span></h1>
     <div class="header-actions">
-      <button id="btnSample" class="btn btn-ghost">تحميل بيانات تجريبية</button>
-      <button id="btnPrint" class="btn btn-ghost no-print">طباعة / PDF</button>
-      <button id="btnReset" class="btn btn-ghost btn-danger-text">مسح البيانات</button>
+      <button id="btnSample" class="btn btn-ghost"><span class="bi-label"><span class="lbl-en">Load Sample Data</span><span class="lbl-ar" dir="rtl" lang="ar">تحميل بيانات تجريبية</span></span></button>
+      <button id="btnPrint" class="btn btn-ghost no-print"><span class="bi-label"><span class="lbl-en">Print / PDF</span><span class="lbl-ar" dir="rtl" lang="ar">طباعة / PDF</span></span></button>
+      <button id="btnReset" class="btn btn-ghost btn-danger-text"><span class="bi-label"><span class="lbl-en">Clear Data</span><span class="lbl-ar" dir="rtl" lang="ar">مسح البيانات</span></span></button>
     </div>
   </div>
   <nav class="tabs no-print">
-    <button class="tab-btn active" data-tab="entry">إدخال البيانات</button>
-    <button class="tab-btn" data-tab="ratios">النسب المالية</button>
-    <button class="tab-btn" data-tab="vertical">التحليل الرأسي</button>
-    <button class="tab-btn" data-tab="horizontal">التحليل الأفقي</button>
-    <button class="tab-btn" data-tab="ccc">دورة CCC</button>
-    <button class="tab-btn" data-tab="summary">الخلاصة والرأي الفني</button>
+    <button class="tab-btn active" data-tab="entry"><span class="bi-label"><span class="lbl-en">Data Entry</span><span class="lbl-ar" dir="rtl" lang="ar">إدخال البيانات</span></span></button>
+    <button class="tab-btn" data-tab="ratios"><span class="bi-label"><span class="lbl-en">Financial Ratios</span><span class="lbl-ar" dir="rtl" lang="ar">النسب المالية</span></span></button>
+    <button class="tab-btn" data-tab="vertical"><span class="bi-label"><span class="lbl-en">Vertical Analysis</span><span class="lbl-ar" dir="rtl" lang="ar">التحليل الرأسي</span></span></button>
+    <button class="tab-btn" data-tab="horizontal"><span class="bi-label"><span class="lbl-en">Horizontal Analysis</span><span class="lbl-ar" dir="rtl" lang="ar">التحليل الأفقي</span></span></button>
+    <button class="tab-btn" data-tab="ccc"><span class="bi-label"><span class="lbl-en">CCC Cycle</span><span class="lbl-ar" dir="rtl" lang="ar">دورة CCC</span></span></button>
+    <button class="tab-btn" data-tab="summary"><span class="bi-label"><span class="lbl-en">Summary & Opinion</span><span class="lbl-ar" dir="rtl" lang="ar">الخلاصة والرأي الفني</span></span></button>
   </nav>
 </header>
 
 <main id="app-main">
 
-  <!-- تبويب: إدخال البيانات -->
+  <!-- Data Entry Tab -->
   <section id="tab-entry" class="tab-panel active">
     <div class="entry-mode-switch">
-      <button id="modeManualBtn" class="mode-btn active" data-mode="manual">إدخال يدوي</button>
-      <button id="modeExcelBtn" class="mode-btn" data-mode="excel">رفع ملف إكسيل</button>
+      <button id="modeManualBtn" class="mode-btn active" data-mode="manual"><span class="bi-label"><span class="lbl-en">Manual Entry</span><span class="lbl-ar" dir="rtl" lang="ar">إدخال يدوي</span></span></button>
+      <button id="modeExcelBtn" class="mode-btn" data-mode="excel"><span class="bi-label"><span class="lbl-en">Upload Excel File</span><span class="lbl-ar" dir="rtl" lang="ar">رفع ملف إكسيل</span></span></button>
     </div>
 
     <div id="manualEntryMode" class="entry-mode-panel active">
       <div class="entry-toolbar">
-        <button id="btnAddPeriod" class="btn btn-primary">+ إضافة فترة / سنة</button>
+        <button id="btnAddPeriod" class="btn btn-primary"><span class="bi-label"><span class="lbl-en">+ Add Period / Year</span><span class="lbl-ar" dir="rtl" lang="ar">+ إضافة فترة / سنة</span></span></button>
         <span id="balanceStatus" class="balance-status"></span>
       </div>
       <div class="table-scroll">
@@ -47,7 +47,7 @@
 
     <div id="excelEntryMode" class="entry-mode-panel">
       <div class="card excel-upload-card">
-        <p>ارفع أي ملف Excel أو CSV يحتوي على قائمة الدخل و/أو المركز المالي. بعد الرفع، هتقدر تطابق بنودنا يدويًا بصفوف وأعمدة ملفك.</p>
+        <p><span class="bi-label"><span class="lbl-en">Upload any Excel or CSV file containing an income statement and/or balance sheet. After uploading, you can manually match our line items to your file's rows and columns.</span><span class="lbl-ar" dir="rtl" lang="ar">ارفع أي ملف Excel أو CSV يحتوي على قائمة الدخل و/أو المركز المالي. بعد الرفع، هتقدر تطابق بنودنا يدويًا بصفوف وأعمدة ملفك.</span></span></p>
         <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv">
         <div id="excelStatus" class="mapping-status"></div>
       </div>
@@ -55,27 +55,27 @@
     </div>
   </section>
 
-  <!-- تبويب: النسب المالية -->
+  <!-- Ratios Tab -->
   <section id="tab-ratios" class="tab-panel">
     <div id="ratiosContent" class="content-block"></div>
   </section>
 
-  <!-- تبويب: التحليل الرأسي -->
+  <!-- Vertical Analysis Tab -->
   <section id="tab-vertical" class="tab-panel">
     <div id="verticalContent" class="content-block"></div>
   </section>
 
-  <!-- تبويب: التحليل الأفقي -->
+  <!-- Horizontal Analysis Tab -->
   <section id="tab-horizontal" class="tab-panel">
     <div id="horizontalContent" class="content-block"></div>
   </section>
 
-  <!-- تبويب: دورة CCC -->
+  <!-- CCC Tab -->
   <section id="tab-ccc" class="tab-panel">
     <div id="cccContent" class="content-block"></div>
   </section>
 
-  <!-- تبويب: الخلاصة والرأي الفني -->
+  <!-- Summary Tab -->
   <section id="tab-summary" class="tab-panel">
     <div id="summaryContent" class="content-block"></div>
   </section>
@@ -83,14 +83,14 @@
 </main>
 
 <footer class="app-footer no-print">
-  <p>هذا التطبيق يعمل بالكامل داخل متصفحك - بياناتك المالية لا تُرسل لأي خادم خارجي. التحليل آلي إرشادي وليس استشارة مالية معتمدة.</p>
+  <p><span class="bi-label"><span class="lbl-en">This app runs entirely in your browser - your financial data is never sent to any external server. The analysis is automated and indicative, not certified financial advice.</span><span class="lbl-ar" dir="rtl" lang="ar">هذا التطبيق يعمل بالكامل داخل متصفحك - بياناتك المالية لا تُرسل لأي خادم خارجي. التحليل آلي إرشادي وليس استشارة مالية معتمدة.</span></span></p>
 </footer>
 
-<!-- مكتبات خارجية (منسوخة محليًا في vendor/ لعدم الاعتماد على اتصال إنترنت وقت الاستخدام) -->
+<!-- Vendored external libraries (local copies in vendor/ so no runtime CDN dependency) -->
 <script src="vendor/xlsx.full.min.js"></script>
 <script src="vendor/chart.umd.min.js"></script>
 
-<!-- ملفات التطبيق -->
+<!-- App files -->
 <script src="sample-data.js"></script>
 <script src="js/dataModel.js"></script>
 <script src="js/analysis.js"></script>
