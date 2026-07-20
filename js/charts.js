@@ -161,10 +161,130 @@ window.FA = window.FA || {};
     });
   }
 
+  // =========================================================================
+  // دورة CCC كشكل دائري مع أسهم توضح اتجاه دوران النقدية
+  // =========================================================================
+  function polarToCartesian(cx, cy, r, angleDeg) {
+    var rad = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+
+  function arcPath(cx, cy, r, startAngle, endAngle) {
+    var s = Math.max(0.001, Math.min(359.999, startAngle));
+    var e = Math.max(0.001, Math.min(359.999, endAngle));
+    if (e <= s) e = s + 0.001;
+    var startPt = polarToCartesian(cx, cy, r, s);
+    var endPt = polarToCartesian(cx, cy, r, e);
+    var largeArc = (e - s) > 180 ? 1 : 0;
+    return "M " + startPt.x.toFixed(2) + " " + startPt.y.toFixed(2) + " A " + r + " " + r + " 0 " + largeArc + " 1 " + endPt.x.toFixed(2) + " " + endPt.y.toFixed(2);
+  }
+
+  function cccMarker(id, color, size) {
+    return '<marker id="' + id + '" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="' + size + '" markerHeight="' + size +
+      '" markerUnits="userSpaceOnUse" orient="auto">' +
+      '<path d="M0,0 L10,5 L0,10 Z" fill="' + color + '"></path></marker>';
+  }
+
+  function renderCCCCircle(containerId, ratioResult) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = "";
+
+    var dio = ratioResult.ccc.dio, dso = ratioResult.ccc.dso, dpo = ratioResult.ccc.dpo, ccc = ratioResult.ccc.ccc;
+    if (dio === null || dso === null || dpo === null) {
+      var msg = document.createElement("div");
+      msg.className = "empty-state";
+      msg.appendChild(FA.util.biEl("div", "Not enough data to draw the cash cycle for this period.", "بيانات غير كافية لرسم دورة النقدية لهذه الفترة."));
+      container.appendChild(msg);
+      return;
+    }
+
+    var cycle = dio + dso; // Operating Cycle (days) -> mapped to the full 360°
+    if (cycle <= 0) cycle = 0.01;
+    var angleDIO = 360 * (dio / cycle);
+    var angleDPO = 360 * (Math.min(dpo, cycle) / cycle);
+
+    var cx = 190, cy = 176;
+    var R1 = 146, W1 = 27; // outer ring: DIO + DSO (the operating cycle)
+    var R2 = 105, W2 = 23; // inner ring: DPO + the CCC cash gap
+
+    var colorDIO = PALETTE[0], colorDSO = PALETTE[4], colorDPO = PALETTE[5], colorCCC = PALETTE[7];
+
+    function arcSvg(r, w, startA, endA, color, markerId) {
+      return '<path d="' + arcPath(cx, cy, r, startA, endA) + '" stroke="' + color + '" stroke-width="' + w +
+        '" fill="none" stroke-linecap="butt" marker-end="url(#' + markerId + ')"></path>';
+    }
+
+    function arcLabel(r, startA, endA, text) {
+      if ((endA - startA) < 22) return "";
+      var mid = (startA + endA) / 2;
+      var p = polarToCartesian(cx, cy, r, mid);
+      return '<text x="' + p.x.toFixed(1) + '" y="' + p.y.toFixed(1) + '" class="ccc-arc-label" text-anchor="middle" dominant-baseline="middle">' + text + '</text>';
+    }
+
+    var svg = '<svg viewBox="0 0 380 366" class="ccc-circle-svg" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs>' +
+      cccMarker("arrowDIO", colorDIO, W1) + cccMarker("arrowDSO", colorDSO, W1) +
+      cccMarker("arrowDPO", colorDPO, W2) + cccMarker("arrowCCC", colorCCC, W2) +
+      '</defs>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + R1 + '" class="ccc-track" stroke-width="' + W1 + '"></circle>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + R2 + '" class="ccc-track" stroke-width="' + W2 + '"></circle>' +
+      arcSvg(R1, W1, 0, angleDIO, colorDIO, "arrowDIO") +
+      arcSvg(R1, W1, angleDIO, 360, colorDSO, "arrowDSO") +
+      arcSvg(R2, W2, 0, angleDPO, colorDPO, "arrowDPO") +
+      arcSvg(R2, W2, angleDPO, 360, colorCCC, "arrowCCC") +
+      arcLabel(R1, 0, angleDIO, "DIO") +
+      arcLabel(R1, angleDIO, 360, "DSO") +
+      arcLabel(R2, 0, angleDPO, "DPO") +
+      arcLabel(R2, angleDPO, 360, "CCC") +
+      '<text x="' + cx + '" y="' + (cy - 16) + '" text-anchor="middle" class="ccc-center-sub">CASH CONVERSION CYCLE</text>' +
+      '<text x="' + cx + '" y="' + (cy + 20) + '" text-anchor="middle" class="ccc-center-num">' + FA.format.num(ccc, 0) + '</text>' +
+      '<text x="' + cx + '" y="' + (cy + 42) + '" text-anchor="middle" class="ccc-center-sub">days</text>' +
+      '<text x="' + cx + '" y="' + (cy + 60) + '" text-anchor="middle" class="ccc-center-sub-ar" dir="rtl">دورة التحويل النقدي - يوم</text>' +
+      '</svg>';
+
+    var wrap = document.createElement("div");
+    wrap.className = "ccc-circle-wrap";
+    wrap.innerHTML = svg;
+    container.appendChild(wrap);
+
+    var flow = document.createElement("p");
+    flow.className = "hint ccc-flow-caption";
+    flow.appendChild(FA.util.biEl("span",
+      "Cash flows clockwise: inventory is purchased and held (DIO), then sold on credit and collected from customers (DSO) - while suppliers are paid after only DPO days. The remaining " + FA.format.num(ccc, 0) + " days (in red) is the cash gap the business must self-finance.",
+      "تدور النقدية في اتجاه عقارب الساعة: يُشترى المخزون ويُحتفظ به (DIO)، ثم يُباع آجلاً ويُحصَّل من العملاء (DSO) - بينما يُسدد للموردين بعد DPO يوم فقط. الفجوة المتبقية (" + FA.format.num(ccc, 0) + " يوم، باللون الأحمر) هي الفترة التي يجب على الشركة تمويلها ذاتيًا."
+    ));
+    container.appendChild(flow);
+
+    var legend = document.createElement("div");
+    legend.className = "ccc-legend";
+    [
+      { color: colorDIO, en: "DIO - Inventory Period", ar: "فترة تخزين المخزون", val: dio },
+      { color: colorDSO, en: "DSO - Receivable Period", ar: "فترة تحصيل العملاء", val: dso },
+      { color: colorDPO, en: "DPO - Payable Period", ar: "فترة سداد الموردين", val: dpo },
+      { color: colorCCC, en: "CCC - Cash Gap", ar: "فجوة النقدية", val: ccc }
+    ].forEach(function (item) {
+      var row = document.createElement("div");
+      row.className = "ccc-legend-item";
+      var dot = document.createElement("span");
+      dot.className = "ccc-legend-dot";
+      dot.style.backgroundColor = item.color;
+      row.appendChild(dot);
+      row.appendChild(FA.util.biEl("span", item.en, item.ar, "ccc-legend-label"));
+      var valSpan = document.createElement("span");
+      valSpan.className = "ccc-legend-val";
+      valSpan.textContent = FA.format.num(item.val, 0) + "d";
+      row.appendChild(valSpan);
+      legend.appendChild(row);
+    });
+    container.appendChild(legend);
+  }
+
   FA.Charts = {
     renderVerticalChart: renderVerticalChart,
     renderHorizontalChart: renderHorizontalChart,
     renderCCCChart: renderCCCChart,
+    renderCCCCircle: renderCCCCircle,
     destroy: destroy
   };
 })(window.FA);

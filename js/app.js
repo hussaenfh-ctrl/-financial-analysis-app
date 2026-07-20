@@ -342,6 +342,31 @@ window.FA = window.FA || {};
     var allRatios = FA.Analysis.computeAllRatios();
     container.innerHTML = "";
 
+    // ---- الرسم الدائري لدورة النقدية (فترة واحدة مختارة) ----
+    var circleCard = el("div", { class: "chart-card" });
+    circleCard.appendChild(biH("h4", "Cash Flow Through the Cycle", "دورة تدفق النقدية"));
+    var selectRow = el("div", { class: "ccc-period-select-row" });
+    selectRow.appendChild(biEl("span", "Period:", "الفترة:"));
+    var periodSelect = el("select", { id: "cccPeriodSelect" });
+    allRatios.forEach(function (r, idx) {
+      var opt = el("option", { value: r.periodId, text: r.periodLabel });
+      if (idx === allRatios.length - 1) opt.selected = true;
+      periodSelect.appendChild(opt);
+    });
+    selectRow.appendChild(periodSelect);
+    circleCard.appendChild(selectRow);
+    var circleContainer = el("div", { id: "cccCircleContainer" });
+    circleCard.appendChild(circleContainer);
+    container.appendChild(circleCard);
+
+    function renderCircleFor(periodId) {
+      var r = allRatios.find(function (x) { return x.periodId === periodId; });
+      if (r) FA.Charts.renderCCCCircle("cccCircleContainer", r);
+    }
+    periodSelect.addEventListener("change", function () { renderCircleFor(periodSelect.value); });
+    renderCircleFor(allRatios[allRatios.length - 1].periodId);
+
+    // ---- الجدول التفصيلي وخط الاتجاه عبر كل الفترات ----
     container.appendChild(el("p", { class: "hint" }, [biEl("span",
       "Cash Conversion Cycle (CCC) = Days Inventory Outstanding (DIO) + Days Sales Outstanding (DSO) − Days Payable Outstanding (DPO)",
       "دورة التحويل النقدي (CCC) = فترة تخزين المخزون (DIO) + فترة تحصيل العملاء (DSO) - فترة سداد الموردين (DPO)"
@@ -369,7 +394,7 @@ window.FA = window.FA || {};
     container.appendChild(table);
 
     var chartCard = el("div", { class: "chart-card" }, [
-      biH("h4", "Cash Conversion Cycle Over Periods", "دورة التحويل النقدي عبر الفترات"),
+      biH("h4", "CCC Trend Over Periods", "اتجاه دورة التحويل النقدي عبر الفترات"),
       el("div", { class: "chart-wrap" }, [el("canvas", { id: "cccChartCanvas" })])
     ]);
     container.appendChild(chartCard);
