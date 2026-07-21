@@ -163,20 +163,20 @@ window.FA = window.FA || {};
               op: "div", numerator: v.cogs, denominator: avgInventory,
               formulaEn: "COGS ÷ Average Inventory", formulaAr: "تكلفة المبيعات ÷ متوسط المخزون" },
             { key: "dio", labelEn: "Days Inventory Outstanding (DIO)", label: "متوسط فترة تخزين المخزون (DIO)", value: dio, fmt: "days",
-              op: "div", numerator: periodDays, denominator: inventoryTurnover, denFmt: "x",
-              formulaEn: "Period Days ÷ Inventory Turnover", formulaAr: "أيام الفترة ÷ معدل دوران المخزون" },
+              op: "divmul", numerator: avgInventory, denominator: v.cogs, multiplier: periodDays,
+              formulaEn: "(Average Inventory ÷ COGS) × Period Days", formulaAr: "(متوسط المخزون ÷ تكلفة المبيعات) × أيام الفترة" },
             { key: "receivableTurnover", labelEn: "Receivables Turnover", label: "معدل دوران العملاء", value: receivableTurnover, fmt: "x",
               op: "div", numerator: v.revenue, denominator: avgAR,
               formulaEn: "Revenue ÷ Average Accounts Receivable", formulaAr: "الإيرادات ÷ متوسط العملاء" },
             { key: "dso", labelEn: "Days Sales Outstanding (DSO)", label: "متوسط فترة تحصيل العملاء (DSO)", value: dso, fmt: "days",
-              op: "div", numerator: periodDays, denominator: receivableTurnover, denFmt: "x",
-              formulaEn: "Period Days ÷ Receivables Turnover", formulaAr: "أيام الفترة ÷ معدل دوران العملاء" },
+              op: "divmul", numerator: avgAR, denominator: v.revenue, multiplier: periodDays,
+              formulaEn: "(Average Accounts Receivable ÷ Revenue) × Period Days", formulaAr: "(متوسط العملاء ÷ الإيرادات) × أيام الفترة" },
             { key: "payableTurnover", labelEn: "Payables Turnover", label: "معدل دوران الموردين", value: payableTurnover, fmt: "x",
               op: "div", numerator: v.cogs, denominator: avgAP,
               formulaEn: "COGS ÷ Average Accounts Payable", formulaAr: "تكلفة المبيعات ÷ متوسط الموردين" },
             { key: "dpo", labelEn: "Days Payable Outstanding (DPO)", label: "متوسط فترة سداد الموردين (DPO)", value: dpo, fmt: "days",
-              op: "div", numerator: periodDays, denominator: payableTurnover, denFmt: "x",
-              formulaEn: "Period Days ÷ Payables Turnover", formulaAr: "أيام الفترة ÷ معدل دوران الموردين" },
+              op: "divmul", numerator: avgAP, denominator: v.cogs, multiplier: periodDays,
+              formulaEn: "(Average Accounts Payable ÷ COGS) × Period Days", formulaAr: "(متوسط الموردين ÷ تكلفة المبيعات) × أيام الفترة" },
             { key: "assetTurnover", labelEn: "Asset Turnover", label: "معدل دوران الأصول", value: assetTurnover, fmt: "x",
               op: "div", numerator: v.revenue, denominator: avgAssets,
               formulaEn: "Revenue ÷ Average Total Assets", formulaAr: "الإيرادات ÷ متوسط إجمالي الأصول" }
@@ -376,6 +376,10 @@ window.FA = window.FA || {};
     if (ratio.numerator === undefined || ratio.denominator === undefined) return "";
     var a = formatOperand(ratio.numerator, ratio.numFmt);
     var b = formatOperand(ratio.denominator, ratio.denFmt);
+    if (ratio.op === "divmul") {
+      var c = formatOperand(ratio.multiplier, ratio.mulFmt);
+      return "(" + a + " ÷ " + b + ") × " + c;
+    }
     var opSign = ratio.op === "sub" ? "−" : "÷";
     return a + " " + opSign + " " + b;
   }

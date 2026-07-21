@@ -416,9 +416,9 @@ window.FA = window.FA || {};
     table.appendChild(head);
 
     [
-      { key: "dio", en: "Days Inventory Outstanding (DIO)", ar: "فترة تخزين المخزون (DIO)", fEn: "Period Days ÷ Inventory Turnover", fAr: "أيام الفترة ÷ معدل دوران المخزون" },
-      { key: "dso", en: "Days Sales Outstanding (DSO)", ar: "فترة تحصيل العملاء (DSO)", fEn: "Period Days ÷ Receivables Turnover", fAr: "أيام الفترة ÷ معدل دوران العملاء" },
-      { key: "dpo", en: "Days Payable Outstanding (DPO)", ar: "فترة سداد الموردين (DPO)", fEn: "Period Days ÷ Payables Turnover", fAr: "أيام الفترة ÷ معدل دوران الموردين" },
+      { key: "dio", en: "Days Inventory Outstanding (DIO)", ar: "فترة تخزين المخزون (DIO)", fEn: "(Average Inventory ÷ COGS) × Period Days", fAr: "(متوسط المخزون ÷ تكلفة المبيعات) × أيام الفترة", idx: 1 },
+      { key: "dso", en: "Days Sales Outstanding (DSO)", ar: "فترة تحصيل العملاء (DSO)", fEn: "(Average Accounts Receivable ÷ Revenue) × Period Days", fAr: "(متوسط العملاء ÷ الإيرادات) × أيام الفترة", idx: 3 },
+      { key: "dpo", en: "Days Payable Outstanding (DPO)", ar: "فترة سداد الموردين (DPO)", fEn: "(Average Accounts Payable ÷ COGS) × Period Days", fAr: "(متوسط الموردين ÷ تكلفة المبيعات) × أيام الفترة", idx: 5 },
       { key: "ccc", en: "Cash Conversion Cycle (CCC)", ar: "دورة التحويل النقدي (CCC)", fEn: "DIO + DSO − DPO", fAr: "DIO + DSO − DPO" }
     ].forEach(function (row) {
       var tr = el("tr", row.key === "ccc" ? { class: "computed-row" } : null);
@@ -433,12 +433,8 @@ window.FA = window.FA || {};
         var activityRatios = r.groups[1].ratios; // [inventoryTurnover, dio, receivableTurnover, dso, payableTurnover, dpo, assetTurnover]
         if (row.key === "ccc" && r.ccc.dio !== null) {
           opTxt = fmtNum(r.ccc.dio, 0) + " + " + fmtNum(r.ccc.dso, 0) + " − " + fmtNum(r.ccc.dpo, 0);
-        } else if (row.key === "dio" && v !== null) {
-          opTxt = "365 ÷ " + fmtNum(activityRatios[0].value, 2) + "×";
-        } else if (row.key === "dso" && v !== null) {
-          opTxt = "365 ÷ " + fmtNum(activityRatios[2].value, 2) + "×";
-        } else if (row.key === "dpo" && v !== null) {
-          opTxt = "365 ÷ " + fmtNum(activityRatios[4].value, 2) + "×";
+        } else if (row.idx !== undefined && v !== null) {
+          opTxt = FA.format.operands(activityRatios[row.idx]);
         }
         if (opTxt) td.appendChild(el("div", { class: "ratio-operands", text: opTxt }));
         tr.appendChild(td);
