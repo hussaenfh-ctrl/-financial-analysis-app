@@ -34,12 +34,62 @@ window.FA = window.FA || {};
   }
 
   // ---------------------------------------------------------------------
+  // النسب المعيارية العالمية الإرشادية لكل نسبة (نفس حدود "جيد" في classify
+  // حيثما وُجدت، عشان الاتساق). annual:true = نسبة تقارن رقم-فترة (تراكمي)
+  // برقم-ميزانية (لحظي)، فبيتقسم على نسبة طول الفترة من السنة. annual:false
+  // = النسبة ثابتة مهما كان طول الفترة (هامش، أو ميزانية/ميزانية، أو أيام
+  // بعد تصحيح DIO/DSO/DPO لاستخدام أيام الفترة الفعلية).
+  // ---------------------------------------------------------------------
+  var BENCHMARKS = {
+    currentRatio: { value: 1.5, annual: false, dir: "gte" },
+    quickRatio: { value: 1.0, annual: false, dir: "gte" },
+    cashRatio: { value: 0.2, annual: false, dir: "gte" },
+    inventoryTurnover: { value: 6, annual: true, dir: "gte" },
+    dio: { value: 60, annual: false, dir: "lte" },
+    receivableTurnover: { value: 8, annual: true, dir: "gte" },
+    dso: { value: 45, annual: false, dir: "lte" },
+    payableTurnover: { value: 6, annual: true, dir: "ref" },
+    dpo: { value: 60, annual: false, dir: "ref" },
+    assetTurnover: { value: 1.0, annual: true, dir: "gte" },
+    grossMargin: { value: 0.30, annual: false, dir: "gte" },
+    operatingMargin: { value: 0.15, annual: false, dir: "gte" },
+    netMargin: { value: 0.10, annual: false, dir: "gte" },
+    roa: { value: 0.05, annual: true, dir: "gte" },
+    roe: { value: 0.15, annual: true, dir: "gte" },
+    debtRatio: { value: 0.5, annual: false, dir: "lte" },
+    debtToEquity: { value: 1.0, annual: false, dir: "lte" },
+    equityRatio: { value: 0.5, annual: false, dir: "ref" },
+    interestCoverage: { value: 4, annual: false, dir: "gte" },
+    ocfRatio: { value: 0.5, annual: true, dir: "gte" },
+    fcfMargin: { value: 0.10, annual: false, dir: "gte" },
+    cashFlowToDebt: { value: 0.20, annual: true, dir: "gte" },
+    ocfToNetIncome: { value: 1.0, annual: false, dir: "gte" }
+  };
+
+  function attachBenchmarks(result, periodDays) {
+    result.groups.forEach(function (group) {
+      group.ratios.forEach(function (r) {
+        var b = BENCHMARKS[r.key];
+        if (!b) return;
+        r.benchmark = b.value;
+        r.benchmarkAnnual = b.annual;
+        r.benchmarkDir = b.dir;
+        r.benchmarkAdj = b.annual ? b.value * periodDays / 365 : b.value;
+      });
+    });
+    return result;
+  }
+
+  // ---------------------------------------------------------------------
   // النسب المالية
   // ---------------------------------------------------------------------
   function computeRatiosForPeriod(periods, idx) {
     var period = periods[idx];
     var v = FA.Store.getComputedRow(period.id);
     var prevRow = idx > 0 ? FA.Store.getComputedRow(periods[idx - 1].id) : null;
+    var periodDays = FA.util.periodDays(period);
+    // لتحجيم حدود classify() الخاصة بالنسب "annual" (فترة/ميزانية) بنفس منطق المعيار
+    function scaleAnnual(x) { return x * periodDays / 365; }
 
     var avgInventory = avg(v, prevRow, "inventory");
     var avgAR = avg(v, prevRow, "accountsReceivable");
@@ -51,9 +101,11 @@ window.FA = window.FA || {};
     var receivableTurnover = safeDiv(v.revenue, avgAR);
     var payableTurnover = safeDiv(v.cogs, avgAP);
 
-    var dio = inventoryTurnover ? 365 / inventoryTurnover : null;
-    var dso = receivableTurnover ? 365 / receivableTurnover : null;
-    var dpo = payableTurnover ? 365 / payableTurnover : null;
+    // نستخدم عدد أيام الفترة الفعلي (مش 365 ثابت) عشان DIO/DSO/DPO تفضل صحيحة
+    // مهما كان طول البيانات المُدخلة (سنة، 6 شهور، ربع سنة...)
+    var dio = inventoryTurnover ? periodDays / inventoryTurnover : null;
+    var dso = receivableTurnover ? periodDays / receivableTurnover : null;
+    var dpo = payableTurnover ? periodDays / payableTurnover : null;
     var ccc = (dio !== null && dso !== null && dpo !== null) ? (dio + dso - dpo) : null;
 
     var currentRatio = safeDiv(v.totalCurrentAssets, v.totalCurrentLiabilities);
@@ -78,9 +130,10 @@ window.FA = window.FA || {};
     var cashFlowToDebt = safeDiv(v.operatingCashFlow, v.totalLiabilities);
     var ocfToNetIncome = v.netIncome ? safeDiv(v.operatingCashFlow, v.netIncome) : null;
 
-    return {
+    var result = {
       periodId: period.id,
       periodLabel: period.label,
+      periodMonths: period.periodMonths,
       groups: [
         {
           key: "liquidity",
@@ -110,20 +163,20 @@ window.FA = window.FA || {};
               op: "div", numerator: v.cogs, denominator: avgInventory,
               formulaEn: "COGS ÷ Average Inventory", formulaAr: "تكلفة المبيعات ÷ متوسط المخزون" },
             { key: "dio", labelEn: "Days Inventory Outstanding (DIO)", label: "متوسط فترة تخزين المخزون (DIO)", value: dio, fmt: "days",
-              op: "div", numerator: 365, denominator: inventoryTurnover, denFmt: "x",
-              formulaEn: "365 ÷ Inventory Turnover", formulaAr: "365 ÷ معدل دوران المخزون" },
+              op: "div", numerator: periodDays, denominator: inventoryTurnover, denFmt: "x",
+              formulaEn: "Period Days ÷ Inventory Turnover", formulaAr: "أيام الفترة ÷ معدل دوران المخزون" },
             { key: "receivableTurnover", labelEn: "Receivables Turnover", label: "معدل دوران العملاء", value: receivableTurnover, fmt: "x",
               op: "div", numerator: v.revenue, denominator: avgAR,
               formulaEn: "Revenue ÷ Average Accounts Receivable", formulaAr: "الإيرادات ÷ متوسط العملاء" },
             { key: "dso", labelEn: "Days Sales Outstanding (DSO)", label: "متوسط فترة تحصيل العملاء (DSO)", value: dso, fmt: "days",
-              op: "div", numerator: 365, denominator: receivableTurnover, denFmt: "x",
-              formulaEn: "365 ÷ Receivables Turnover", formulaAr: "365 ÷ معدل دوران العملاء" },
+              op: "div", numerator: periodDays, denominator: receivableTurnover, denFmt: "x",
+              formulaEn: "Period Days ÷ Receivables Turnover", formulaAr: "أيام الفترة ÷ معدل دوران العملاء" },
             { key: "payableTurnover", labelEn: "Payables Turnover", label: "معدل دوران الموردين", value: payableTurnover, fmt: "x",
               op: "div", numerator: v.cogs, denominator: avgAP,
               formulaEn: "COGS ÷ Average Accounts Payable", formulaAr: "تكلفة المبيعات ÷ متوسط الموردين" },
             { key: "dpo", labelEn: "Days Payable Outstanding (DPO)", label: "متوسط فترة سداد الموردين (DPO)", value: dpo, fmt: "days",
-              op: "div", numerator: 365, denominator: payableTurnover, denFmt: "x",
-              formulaEn: "365 ÷ Payables Turnover", formulaAr: "365 ÷ معدل دوران الموردين" },
+              op: "div", numerator: periodDays, denominator: payableTurnover, denFmt: "x",
+              formulaEn: "Period Days ÷ Payables Turnover", formulaAr: "أيام الفترة ÷ معدل دوران الموردين" },
             { key: "assetTurnover", labelEn: "Asset Turnover", label: "معدل دوران الأصول", value: assetTurnover, fmt: "x",
               op: "div", numerator: v.revenue, denominator: avgAssets,
               formulaEn: "Revenue ÷ Average Total Assets", formulaAr: "الإيرادات ÷ متوسط إجمالي الأصول" }
@@ -143,10 +196,10 @@ window.FA = window.FA || {};
             { key: "netMargin", labelEn: "Net Profit Margin", label: "هامش صافي الربح", value: netMargin, fmt: "pct", flag: classify(netMargin, 0.10, 0.0, true),
               op: "div", numerator: v.netIncome, denominator: v.revenue,
               formulaEn: "Net Income ÷ Revenue", formulaAr: "صافي الربح ÷ الإيرادات" },
-            { key: "roa", labelEn: "Return on Assets (ROA)", label: "العائد على الأصول (ROA)", value: roa, fmt: "pct", flag: classify(roa, 0.05, 0.0, true),
+            { key: "roa", labelEn: "Return on Assets (ROA)", label: "العائد على الأصول (ROA)", value: roa, fmt: "pct", flag: classify(roa, scaleAnnual(0.05), scaleAnnual(0.0), true),
               op: "div", numerator: v.netIncome, denominator: avgAssets,
               formulaEn: "Net Income ÷ Average Total Assets", formulaAr: "صافي الربح ÷ متوسط إجمالي الأصول" },
-            { key: "roe", labelEn: "Return on Equity (ROE)", label: "العائد على حقوق الملكية (ROE)", value: roe, fmt: "pct", flag: classify(roe, 0.15, 0.0, true),
+            { key: "roe", labelEn: "Return on Equity (ROE)", label: "العائد على حقوق الملكية (ROE)", value: roe, fmt: "pct", flag: classify(roe, scaleAnnual(0.15), scaleAnnual(0.0), true),
               op: "div", numerator: v.netIncome, denominator: avgEquity,
               formulaEn: "Net Income ÷ Average Total Equity", formulaAr: "صافي الربح ÷ متوسط إجمالي حقوق الملكية" }
           ]
@@ -175,7 +228,7 @@ window.FA = window.FA || {};
           titleEn: "Cash Flow Ratios",
           title: "نسب التدفقات النقدية",
           ratios: [
-            { key: "ocfRatio", labelEn: "Operating Cash Flow Ratio", label: "نسبة التدفق النقدي التشغيلي", value: ocfRatio, fmt: "x", flag: classify(ocfRatio, 0.5, 0.25, true),
+            { key: "ocfRatio", labelEn: "Operating Cash Flow Ratio", label: "نسبة التدفق النقدي التشغيلي", value: ocfRatio, fmt: "x", flag: classify(ocfRatio, scaleAnnual(0.5), scaleAnnual(0.25), true),
               op: "div", numerator: v.operatingCashFlow, denominator: v.totalCurrentLiabilities,
               formulaEn: "Operating Cash Flow ÷ Total Current Liabilities", formulaAr: "التدفق النقدي التشغيلي ÷ إجمالي الخصوم المتداولة" },
             { key: "freeCashFlow", labelEn: "Free Cash Flow (FCF)", label: "التدفق النقدي الحر (FCF)", value: v.freeCashFlow, fmt: "num", flag: v.freeCashFlow >= 0 ? "good" : "poor",
@@ -184,7 +237,7 @@ window.FA = window.FA || {};
             { key: "fcfMargin", labelEn: "FCF Margin", label: "هامش التدفق النقدي الحر", value: fcfMargin, fmt: "pct", flag: classify(fcfMargin, 0.10, 0.0, true),
               op: "div", numerator: v.freeCashFlow, denominator: v.revenue,
               formulaEn: "Free Cash Flow ÷ Revenue", formulaAr: "التدفق النقدي الحر ÷ الإيرادات" },
-            { key: "cashFlowToDebt", labelEn: "Cash Flow to Debt", label: "التدفق النقدي إلى الدين", value: cashFlowToDebt, fmt: "pct", flag: classify(cashFlowToDebt, 0.20, 0.10, true),
+            { key: "cashFlowToDebt", labelEn: "Cash Flow to Debt", label: "التدفق النقدي إلى الدين", value: cashFlowToDebt, fmt: "pct", flag: classify(cashFlowToDebt, scaleAnnual(0.20), scaleAnnual(0.10), true),
               op: "div", numerator: v.operatingCashFlow, denominator: v.totalLiabilities,
               formulaEn: "Operating Cash Flow ÷ Total Liabilities", formulaAr: "التدفق النقدي التشغيلي ÷ إجمالي الخصوم" },
             { key: "ocfToNetIncome", labelEn: "OCF to Net Income (Earnings Quality)", label: "التدفق النقدي إلى صافي الربح (جودة الأرباح)", value: ocfToNetIncome, fmt: "x", flag: classify(ocfToNetIncome, 1.0, 0.7, true),
@@ -195,6 +248,7 @@ window.FA = window.FA || {};
       ],
       ccc: { dio: dio, dso: dso, dpo: dpo, ccc: ccc }
     };
+    return attachBenchmarks(result, periodDays);
   }
 
   function computeAllRatios() {
@@ -238,7 +292,7 @@ window.FA = window.FA || {};
           pct: safeDiv(v[item.key], v.revenue)
         };
       });
-      return { periodId: p.id, periodLabel: p.label, incomeStatement: isRows, balanceSheet: bsRows, cashFlow: cfRows };
+      return { periodId: p.id, periodLabel: p.label, periodMonths: p.periodMonths, incomeStatement: isRows, balanceSheet: bsRows, cashFlow: cfRows };
     });
   }
 
@@ -326,9 +380,16 @@ window.FA = window.FA || {};
     return a + " " + opSign + " " + b;
   }
 
+  function formatBenchmark(ratio) {
+    if (ratio.benchmarkAdj === undefined || ratio.benchmarkAdj === null) return "";
+    var sign = ratio.benchmarkDir === "gte" ? "≥" : ratio.benchmarkDir === "lte" ? "≤" : "~";
+    return sign + formatRatioValue({ value: ratio.benchmarkAdj, fmt: ratio.fmt });
+  }
+
   FA.format = {
     num: fmtNum,
     ratio: formatRatioValue,
-    operands: formatOperands
+    operands: formatOperands,
+    benchmark: formatBenchmark
   };
 })(window.FA);

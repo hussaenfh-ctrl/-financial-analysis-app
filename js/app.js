@@ -31,6 +31,12 @@ window.FA = window.FA || {};
   function biH(tag, en, ar, cls) {
     return el(tag, cls ? { class: cls } : null, [biEl("span", en, ar)]);
   }
+  function periodHeaderText(label, months) {
+    if (months && months !== 12) {
+      return label + " (" + (months % 1 === 0 ? months : months.toFixed(1)) + "mo)";
+    }
+    return label;
+  }
 
   // =========================================================================
   // التنقل بين التبويبات
@@ -116,6 +122,15 @@ window.FA = window.FA || {};
       input.addEventListener("change", function () {
         FA.Store.renamePeriod(p.id, input.value.trim() || p.label);
       });
+
+      var monthsRow = el("div", { class: "period-months-row" }, [biEl("span", "Months:", "شهور:", "period-months-label")]);
+      var monthsInput = el("input", { type: "number", class: "period-months-input", min: "1", max: "36", step: "1" });
+      monthsInput.value = p.periodMonths || 12;
+      monthsInput.addEventListener("change", function () {
+        FA.Store.setPeriodMonths(p.id, monthsInput.value);
+      });
+      monthsRow.appendChild(monthsInput);
+
       var removeBtn = el("button", { type: "button", class: "btn-small btn-danger remove-period-btn" }, [biEl("span", "Remove", "حذف الفترة")]);
       removeBtn.addEventListener("click", function () {
         if (confirm("Delete period \"" + p.label + "\"? / حذف فترة \"" + p.label + "\"؟")) {
@@ -124,6 +139,7 @@ window.FA = window.FA || {};
         }
       });
       th.appendChild(input);
+      th.appendChild(monthsRow);
       th.appendChild(removeBtn);
       headRow.appendChild(th);
     });
@@ -229,7 +245,7 @@ window.FA = window.FA || {};
       var table = el("table", { class: "ratio-table" });
       var head = el("tr");
       head.appendChild(biTh("Ratio", "النسبة"));
-      allRatios.forEach(function (r) { head.appendChild(el("th", { text: r.periodLabel })); });
+      allRatios.forEach(function (r) { head.appendChild(el("th", { text: periodHeaderText(r.periodLabel, r.periodMonths) })); });
       table.appendChild(head);
 
       groupTemplate.ratios.forEach(function (ratioTemplate, rIdx) {
@@ -245,6 +261,12 @@ window.FA = window.FA || {};
           td.appendChild(el("div", { class: "ratio-value", text: fmtRatio(r) }));
           var operandsTxt = FA.format.operands(r);
           if (operandsTxt) td.appendChild(el("div", { class: "ratio-operands", text: operandsTxt }));
+          var bmTxt = FA.format.benchmark(r);
+          if (bmTxt) {
+            var months = periodResult.periodMonths;
+            var scaledNote = (r.benchmarkAnnual && months && months !== 12) ? " (" + (months % 1 === 0 ? months : months.toFixed(1)) + "mo)" : "";
+            td.appendChild(el("div", { class: "ratio-benchmark", text: bi("Benchmark", "المعيار") + ": " + bmTxt + scaledNote }));
+          }
           if (r.flag) td.classList.add("flag-" + r.flag);
           tr.appendChild(td);
         });
@@ -270,7 +292,7 @@ window.FA = window.FA || {};
       var table = el("table");
       var head = el("tr");
       head.appendChild(biTh("Item", "البند"));
-      vertical.forEach(function (v) { head.appendChild(el("th", { text: v.periodLabel })); });
+      vertical.forEach(function (v) { head.appendChild(el("th", { text: periodHeaderText(v.periodLabel, v.periodMonths) })); });
       table.appendChild(head);
 
       var rowDefs = vertical[0][key];
@@ -316,7 +338,7 @@ window.FA = window.FA || {};
       var table = el("table");
       var head = el("tr");
       head.appendChild(biTh("Item", "البند"));
-      horizontal.periods.forEach(function (p) { head.appendChild(el("th", { text: p.label })); });
+      horizontal.periods.forEach(function (p) { head.appendChild(el("th", { text: periodHeaderText(p.label, p.periodMonths) })); });
       table.appendChild(head);
 
       list.forEach(function (item) {
@@ -365,7 +387,7 @@ window.FA = window.FA || {};
     selectRow.appendChild(biEl("span", "Period:", "الفترة:"));
     var periodSelect = el("select", { id: "cccPeriodSelect" });
     allRatios.forEach(function (r, idx) {
-      var opt = el("option", { value: r.periodId, text: r.periodLabel });
+      var opt = el("option", { value: r.periodId, text: periodHeaderText(r.periodLabel, r.periodMonths) });
       if (idx === allRatios.length - 1) opt.selected = true;
       periodSelect.appendChild(opt);
     });
@@ -390,13 +412,13 @@ window.FA = window.FA || {};
 
     var table = el("table");
     var head = el("tr", null, [biTh("Indicator", "المؤشر")]);
-    allRatios.forEach(function (r) { head.appendChild(el("th", { text: r.periodLabel })); });
+    allRatios.forEach(function (r) { head.appendChild(el("th", { text: periodHeaderText(r.periodLabel, r.periodMonths) })); });
     table.appendChild(head);
 
     [
-      { key: "dio", en: "Days Inventory Outstanding (DIO)", ar: "فترة تخزين المخزون (DIO)", fEn: "365 ÷ Inventory Turnover", fAr: "365 ÷ معدل دوران المخزون" },
-      { key: "dso", en: "Days Sales Outstanding (DSO)", ar: "فترة تحصيل العملاء (DSO)", fEn: "365 ÷ Receivables Turnover", fAr: "365 ÷ معدل دوران العملاء" },
-      { key: "dpo", en: "Days Payable Outstanding (DPO)", ar: "فترة سداد الموردين (DPO)", fEn: "365 ÷ Payables Turnover", fAr: "365 ÷ معدل دوران الموردين" },
+      { key: "dio", en: "Days Inventory Outstanding (DIO)", ar: "فترة تخزين المخزون (DIO)", fEn: "Period Days ÷ Inventory Turnover", fAr: "أيام الفترة ÷ معدل دوران المخزون" },
+      { key: "dso", en: "Days Sales Outstanding (DSO)", ar: "فترة تحصيل العملاء (DSO)", fEn: "Period Days ÷ Receivables Turnover", fAr: "أيام الفترة ÷ معدل دوران العملاء" },
+      { key: "dpo", en: "Days Payable Outstanding (DPO)", ar: "فترة سداد الموردين (DPO)", fEn: "Period Days ÷ Payables Turnover", fAr: "أيام الفترة ÷ معدل دوران الموردين" },
       { key: "ccc", en: "Cash Conversion Cycle (CCC)", ar: "دورة التحويل النقدي (CCC)", fEn: "DIO + DSO − DPO", fAr: "DIO + DSO − DPO" }
     ].forEach(function (row) {
       var tr = el("tr", row.key === "ccc" ? { class: "computed-row" } : null);

@@ -283,12 +283,21 @@ window.FA = window.FA || {};
       return state.periods.slice();
     },
 
-    addPeriod: function (label) {
+    addPeriod: function (label, periodMonths) {
       var id = "p" + state.nextId++;
-      state.periods.push({ id: id, label: label || ("سنة " + state.periods.length + 1) });
+      state.periods.push({ id: id, label: label || ("سنة " + state.periods.length + 1), periodMonths: periodMonths || 12 });
       state.values[id] = emptyValuesRow();
       Store.save();
       return id;
+    },
+
+    setPeriodMonths: function (id, months) {
+      var p = state.periods.find(function (p) { return p.id === id; });
+      var m = parseFloat(months);
+      if (p && m > 0) {
+        p.periodMonths = m;
+        Store.save();
+      }
     },
 
     removePeriod: function (id) {
@@ -396,6 +405,7 @@ window.FA = window.FA || {};
           var parsed = JSON.parse(raw);
           if (parsed && parsed.periods) {
             state = parsed;
+            state.periods.forEach(function (p) { if (!p.periodMonths) p.periodMonths = 12; }); // ترحيل بيانات قديمة
             return true;
           }
         }
@@ -448,5 +458,11 @@ window.FA = window.FA || {};
     return ar ? en + " / " + ar : en;
   }
 
-  FA.util = { num: num, biEl: biEl, biStr: biStr };
+  // عدد أيام الفترة الفعلي بناءً على طولها بالشهور (12 شهر = 365 يوم)
+  function periodDays(period) {
+    var months = (period && period.periodMonths) || 12;
+    return months * 365 / 12;
+  }
+
+  FA.util = { num: num, biEl: biEl, biStr: biStr, periodDays: periodDays };
 })(window.FA);

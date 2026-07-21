@@ -194,14 +194,17 @@ window.FA = window.FA || {};
       var headerVal = defaultCol !== undefined && rows[0] ? rows[0][defaultCol] : "";
       labelInput.value = headerVal ? String(headerVal) : ("Period " + (idx + 1));
 
+      var monthsInput = el("input", { type: "number", class: "period-months-input", min: "1", max: "36", step: "1", title: "Months covered / عدد الشهور" });
+      monthsInput.value = "12";
+
       var removeBtn = el("button", { type: "button", class: "btn-small btn-danger remove-period-btn", text: bi("Remove", "حذف") });
-      var row = el("div", { class: "period-row" }, [colSelect, labelInput, removeBtn]);
+      var row = el("div", { class: "period-row" }, [colSelect, labelInput, FA.util.biEl("span", "Months:", "شهور:", "period-months-label"), monthsInput, removeBtn]);
       removeBtn.addEventListener("click", function () {
         row.remove();
         periodEntries = periodEntries.filter(function (pe) { return pe.row !== row; });
       });
 
-      periodEntries.push({ row: row, colSelect: colSelect, labelInput: labelInput });
+      periodEntries.push({ row: row, colSelect: colSelect, labelInput: labelInput, monthsInput: monthsInput });
       periodRowsContainer.appendChild(row);
     }
 
@@ -272,7 +275,11 @@ window.FA = window.FA || {};
     applyBtn.addEventListener("click", function () {
       var periodsConfig = periodEntries
         .map(function (pe) {
-          return { col: parseInt(pe.colSelect.value, 10), label: pe.labelInput.value.trim() || "Period" };
+          return {
+            col: parseInt(pe.colSelect.value, 10),
+            label: pe.labelInput.value.trim() || "Period",
+            months: parseFloat(pe.monthsInput.value) || 12
+          };
         })
         .filter(function (p) { return p.col >= 0; });
 
@@ -307,7 +314,7 @@ window.FA = window.FA || {};
 
   function applyMapping(rows, periodsConfig, itemMapping) {
     var periodIds = periodsConfig.map(function (p) {
-      return { id: FA.Store.addPeriod(p.label), col: p.col };
+      return { id: FA.Store.addPeriod(p.label, p.months), col: p.col };
     });
 
     periodIds.forEach(function (p) {

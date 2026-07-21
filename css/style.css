@@ -279,6 +279,21 @@ th { background: var(--surface-2); color: var(--text-secondary); font-weight: 70
 }
 .remove-period-btn { display: block; margin: 6px auto 0; font-size: .75rem; }
 
+.period-months-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 6px; font-weight: 400; }
+.period-months-row .lbl-en { font-size: .78rem; color: var(--text-muted); font-weight: 500; }
+.period-months-row .lbl-ar { display: none; }
+.period-months-input, input.period-months-input {
+  width: 52px;
+  padding: 4px 5px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+  text-align: center;
+  font-size: .82rem;
+}
+.period-months-label { font-size: .82rem; color: var(--text-muted); }
+
 /* ---------- رفع اكسيل ---------- */
 .excel-upload-card p { margin-top: 0; color: var(--text-secondary); font-size: 1.02rem; line-height: 1.6; }
 .mapping-status { margin-top: 8px; font-size: .95rem; font-weight: 600; }
@@ -336,6 +351,15 @@ input.period-label-input { padding: 6px 8px; border-radius: 6px; border: 1px sol
   font-size: .78rem;
   color: var(--text-muted);
   font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.ratio-benchmark {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+  font-size: .78rem;
+  color: var(--accent);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
