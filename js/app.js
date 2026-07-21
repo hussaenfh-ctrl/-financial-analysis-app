@@ -179,6 +179,13 @@ window.FA = window.FA || {};
     table.appendChild(bsHeader);
     FA.itemDefs.balanceSheet.forEach(buildItemRow);
 
+    var cfHeader = el("tr", { class: "section-row" });
+    var cfHeaderTd = el("td", null, [biEl("span", "Cash Flow Statement", "قائمة التدفقات النقدية")]);
+    cfHeaderTd.colSpan = periods.length + 1;
+    cfHeader.appendChild(cfHeaderTd);
+    table.appendChild(cfHeader);
+    FA.itemDefs.cashFlow.forEach(buildItemRow);
+
     updateBalanceStatus();
   }
 
@@ -282,6 +289,7 @@ window.FA = window.FA || {};
 
     buildTable("Income Statement (% of Revenue)", "قائمة الدخل (كنسبة من الإيرادات)", "incomeStatement");
     buildTable("Balance Sheet (% of Total Assets)", "قائمة المركز المالي (كنسبة من إجمالي الأصول)", "balanceSheet");
+    buildTable("Cash Flow Statement (% of Revenue)", "قائمة التدفقات النقدية (كنسبة من الإيرادات)", "cashFlow");
 
     var chartCard = el("div", { class: "chart-card" }, [
       biH("h4", "Asset Composition Over Periods (%)", "تكوين الأصول عبر الفترات (%)"),
@@ -329,6 +337,7 @@ window.FA = window.FA || {};
 
     buildTable("Income Statement - Change Over Periods", "قائمة الدخل - التغير عبر الفترات", horizontal.incomeStatement);
     buildTable("Balance Sheet - Change Over Periods", "قائمة المركز المالي - التغير عبر الفترات", horizontal.balanceSheet);
+    buildTable("Cash Flow Statement - Change Over Periods", "قائمة التدفقات النقدية - التغير عبر الفترات", horizontal.cashFlow);
 
     var chartCard = el("div", { class: "chart-card" }, [
       biH("h4", "Index (base = 100) for Revenue, Net Income & Total Assets", "الرقم القياسي (أساس = 100) للإيرادات وصافي الربح وإجمالي الأصول"),
@@ -520,6 +529,73 @@ window.FA = window.FA || {};
   }
 
   // =========================================================================
+  // مبدّل الشركات (بيانات متعددة منفصلة)
+  // =========================================================================
+  function refreshAfterCompanyChange() {
+    renderManualTable();
+    renderTab(document.querySelector(".tab-btn.active").dataset.tab);
+    updatePrintTitle();
+  }
+
+  function updatePrintTitle() {
+    var titleEl = document.getElementById("printCompanyTitle");
+    var active = FA.Companies.getActive();
+    titleEl.textContent = active ? "Financial Analysis Report - " + active.name : "";
+  }
+
+  function populateCompanySelect() {
+    var select = document.getElementById("companySelect");
+    var activeId = FA.Companies.getActiveId();
+    select.innerHTML = "";
+    FA.Companies.list().forEach(function (c) {
+      var opt = el("option", { value: c.id, text: c.name });
+      if (c.id === activeId) opt.selected = true;
+      select.appendChild(opt);
+    });
+    updatePrintTitle();
+  }
+
+  function initCompanySwitcher() {
+    var select = document.getElementById("companySelect");
+    populateCompanySelect();
+
+    select.addEventListener("change", function () {
+      FA.Companies.switchTo(select.value);
+      FA.Store.load();
+      refreshAfterCompanyChange();
+    });
+
+    document.getElementById("btnCompanyNew").addEventListener("click", function () {
+      var name = prompt("New company name: / اسم الشركة الجديدة:");
+      if (name === null) return;
+      FA.Companies.create(name.trim() || undefined);
+      FA.Store.load();
+      populateCompanySelect();
+      refreshAfterCompanyChange();
+    });
+
+    document.getElementById("btnCompanyRename").addEventListener("click", function () {
+      var active = FA.Companies.getActive();
+      if (!active) return;
+      var name = prompt("Rename company: / إعادة تسمية الشركة:", active.name);
+      if (name === null) return;
+      FA.Companies.rename(active.id, name);
+      populateCompanySelect();
+    });
+
+    document.getElementById("btnCompanyDelete").addEventListener("click", function () {
+      var active = FA.Companies.getActive();
+      if (!active) return;
+      if (confirm("Delete company \"" + active.name + "\" and all its data? This cannot be undone. / حذف شركة \"" + active.name + "\" وكل بياناتها؟ لا يمكن التراجع عن هذا الإجراء.")) {
+        FA.Companies.remove(active.id);
+        FA.Store.load();
+        populateCompanySelect();
+        refreshAfterCompanyChange();
+      }
+    });
+  }
+
+  // =========================================================================
   // أزرار عامة
   // =========================================================================
   function initGlobalButtons() {
@@ -531,6 +607,9 @@ window.FA = window.FA || {};
     document.getElementById("btnPrint").addEventListener("click", function () {
       renderTab("ratios"); renderTab("vertical"); renderTab("horizontal"); renderTab("ccc"); renderTab("summary");
       window.print();
+    });
+    document.getElementById("btnExportExcel").addEventListener("click", function () {
+      FA.Export.toExcel();
     });
     document.getElementById("btnReset").addEventListener("click", function () {
       if (confirm("Clear all entered data? This cannot be undone. / هل تريد مسح كل البيانات المدخلة؟ لا يمكن التراجع عن هذا الإجراء.")) {
@@ -555,10 +634,12 @@ window.FA = window.FA || {};
   // التهيئة
   // =========================================================================
   document.addEventListener("DOMContentLoaded", function () {
+    FA.Companies.init();
     FA.Store.load();
     initTabs();
     initEntryModeSwitch();
     initExcelUpload();
+    initCompanySwitcher();
     initGlobalButtons();
     renderManualTable();
   });

@@ -7,7 +7,12 @@ window.FA = window.FA || {};
 (function (FA) {
   "use strict";
 
-  var STORAGE_KEY = "fa_financial_data_v1";
+  var OLD_STORAGE_KEY_V1 = "fa_financial_data_v1"; // مفتاح النسخة القديمة (شركة واحدة) - للترحيل فقط
+  var COMPANIES_KEY = "fa_companies_registry_v1";
+
+  function dataKeyFor(companyId) {
+    return "fa_company_data_" + companyId;
+  }
 
   // ---------------------------------------------------------------------
   // تعريف بنود قائمة الدخل
@@ -55,12 +60,25 @@ window.FA = window.FA || {};
     { key: "totalEquity", labelEn: "Total Equity", label: "إجمالي حقوق الملكية", computed: true, section: "totals" }
   ];
 
+  // ---------------------------------------------------------------------
+  // تعريف بنود قائمة التدفقات النقدية
+  // ---------------------------------------------------------------------
+  var cashFlow = [
+    { key: "operatingCashFlow", labelEn: "Net Cash from Operating Activities", label: "صافي النقدية من الأنشطة التشغيلية", editable: true },
+    { key: "capex", labelEn: "Capital Expenditures (CapEx)", label: "المصروفات الرأسمالية", editable: true },
+    { key: "freeCashFlow", labelEn: "Free Cash Flow (FCF)", label: "التدفق النقدي الحر (FCF)", computed: true },
+    { key: "investingCashFlowOther", labelEn: "Other Investing Activities", label: "أنشطة استثمارية أخرى", editable: true },
+    { key: "financingCashFlow", labelEn: "Net Cash from Financing Activities", label: "صافي النقدية من الأنشطة التمويلية", editable: true },
+    { key: "netChangeInCash", labelEn: "Net Change in Cash", label: "صافي التغير في النقدية", computed: true }
+  ];
+
   FA.itemDefs = {
     incomeStatement: incomeStatement,
-    balanceSheet: balanceSheet
+    balanceSheet: balanceSheet,
+    cashFlow: cashFlow
   };
 
-  FA.allItems = incomeStatement.concat(balanceSheet);
+  FA.allItems = incomeStatement.concat(balanceSheet).concat(cashFlow);
 
   FA.itemByKey = {};
   FA.allItems.forEach(function (it) {
@@ -78,7 +96,9 @@ window.FA = window.FA || {};
     "totalAssets",
     "totalCurrentLiabilities",
     "totalLiabilities",
-    "totalEquity"
+    "totalEquity",
+    "freeCashFlow",
+    "netChangeInCash"
   ];
 
   function num(v) {
@@ -110,8 +130,132 @@ window.FA = window.FA || {};
     },
     totalEquity: function (v) {
       return num(v.shareCapital) + num(v.retainedEarnings) + num(v.otherEquity);
+    },
+    freeCashFlow: function (v) {
+      return num(v.operatingCashFlow) - num(v.capex);
+    },
+    netChangeInCash: function (v) {
+      return num(v.freeCashFlow) + num(v.investingCashFlowOther) + num(v.financingCashFlow);
     }
   };
+
+  // ---------------------------------------------------------------------
+  // FA.Companies: سجل الشركات المتعددة - كل شركة لها بيانات منفصلة في التخزين المحلي
+  // ---------------------------------------------------------------------
+  var Companies = (function () {
+    var registry = null;
+
+    function migrateOldData() {
+      var oldRaw = null;
+      try { oldRaw = localStorage.getItem(OLD_STORAGE_KEY_V1); } catch (e) { /* تجاهل */ }
+      var reg = { companies: [], activeId: null, nextId: 1 };
+      var id = "c" + reg.nextId++;
+      reg.companies.push({ id: id, name: "My Company" });
+      reg.activeId = id;
+      if (oldRaw) {
+        try {
+          localStorage.setItem(dataKeyFor(id), oldRaw);
+          localStorage.removeItem(OLD_STORAGE_KEY_V1);
+        } catch (e) { /* تجاهل */ }
+      }
+      return reg;
+    }
+
+    function loadRegistry() {
+      if (registry) return registry;
+      try {
+        var raw = localStorage.getItem(COMPANIES_KEY);
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && parsed.companies && parsed.companies.length) {
+            registry = parsed;
+            return registry;
+          }
+        }
+      } catch (e) { /* تجاهل بيانات تالفة */ }
+      registry = migrateOldData();
+      saveRegistry();
+      return registry;
+    }
+
+    function saveRegistry() {
+      try {
+        localStorage.setItem(COMPANIES_KEY, JSON.stringify(registry));
+      } catch (e) { /* localStorage قد يكون غير متاح */ }
+    }
+
+    function list() {
+      return loadRegistry().companies.slice();
+    }
+
+    function getActiveId() {
+      var reg = loadRegistry();
+      if (!reg.activeId || !reg.companies.some(function (c) { return c.id === reg.activeId; })) {
+        reg.activeId = reg.companies.length ? reg.companies[0].id : null;
+        saveRegistry();
+      }
+      return reg.activeId;
+    }
+
+    function getActive() {
+      var reg = loadRegistry();
+      var id = getActiveId();
+      return reg.companies.find(function (c) { return c.id === id; }) || null;
+    }
+
+    function create(name) {
+      var reg = loadRegistry();
+      var id = "c" + reg.nextId++;
+      reg.companies.push({ id: id, name: name || ("Company " + (reg.companies.length + 1)) });
+      reg.activeId = id;
+      saveRegistry();
+      return id;
+    }
+
+    function rename(id, name) {
+      var reg = loadRegistry();
+      var c = reg.companies.find(function (c) { return c.id === id; });
+      if (c && name && name.trim()) {
+        c.name = name.trim();
+        saveRegistry();
+      }
+    }
+
+    function remove(id) {
+      var reg = loadRegistry();
+      reg.companies = reg.companies.filter(function (c) { return c.id !== id; });
+      try { localStorage.removeItem(dataKeyFor(id)); } catch (e) { /* تجاهل */ }
+      if (reg.companies.length === 0) {
+        var newId = "c" + reg.nextId++;
+        reg.companies.push({ id: newId, name: "My Company" });
+        reg.activeId = newId;
+      } else if (reg.activeId === id) {
+        reg.activeId = reg.companies[0].id;
+      }
+      saveRegistry();
+    }
+
+    function switchTo(id) {
+      var reg = loadRegistry();
+      if (reg.companies.some(function (c) { return c.id === id; })) {
+        reg.activeId = id;
+        saveRegistry();
+      }
+    }
+
+    return {
+      init: function () { loadRegistry(); },
+      list: list,
+      getActiveId: getActiveId,
+      getActive: getActive,
+      create: create,
+      rename: rename,
+      remove: remove,
+      switchTo: switchTo
+    };
+  })();
+
+  FA.Companies = Companies;
 
   // ---------------------------------------------------------------------
   // Store: إدارة الفترات والقيم والتخزين المحلي
@@ -239,7 +383,7 @@ window.FA = window.FA || {};
 
     save: function () {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        localStorage.setItem(dataKeyFor(Companies.getActiveId()), JSON.stringify(state));
       } catch (e) {
         /* localStorage قد يكون غير متاح - نتجاهل بصمت */
       }
@@ -247,7 +391,7 @@ window.FA = window.FA || {};
 
     load: function () {
       try {
-        var raw = localStorage.getItem(STORAGE_KEY);
+        var raw = localStorage.getItem(dataKeyFor(Companies.getActiveId()));
         if (raw) {
           var parsed = JSON.parse(raw);
           if (parsed && parsed.periods) {
@@ -258,6 +402,7 @@ window.FA = window.FA || {};
       } catch (e) {
         /* تجاهل بيانات تالفة */
       }
+      state = { periods: [], values: {}, nextId: 1 };
       return false;
     },
 

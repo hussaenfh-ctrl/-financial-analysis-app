@@ -73,6 +73,11 @@ window.FA = window.FA || {};
     var equityRatio = safeDiv(v.totalEquity, v.totalAssets);
     var interestCoverage = v.interestExpense ? safeDiv(v.operatingIncome, v.interestExpense) : null;
 
+    var ocfRatio = safeDiv(v.operatingCashFlow, v.totalCurrentLiabilities);
+    var fcfMargin = safeDiv(v.freeCashFlow, v.revenue);
+    var cashFlowToDebt = safeDiv(v.operatingCashFlow, v.totalLiabilities);
+    var ocfToNetIncome = v.netIncome ? safeDiv(v.operatingCashFlow, v.netIncome) : null;
+
     return {
       periodId: period.id,
       periodLabel: period.label,
@@ -164,6 +169,28 @@ window.FA = window.FA || {};
               op: "div", numerator: v.operatingIncome, denominator: v.interestExpense,
               formulaEn: "Operating Income (EBIT) ÷ Interest Expense", formulaAr: "الربح التشغيلي (EBIT) ÷ مصروفات الفوائد" }
           ]
+        },
+        {
+          key: "cashFlow",
+          titleEn: "Cash Flow Ratios",
+          title: "نسب التدفقات النقدية",
+          ratios: [
+            { key: "ocfRatio", labelEn: "Operating Cash Flow Ratio", label: "نسبة التدفق النقدي التشغيلي", value: ocfRatio, fmt: "x", flag: classify(ocfRatio, 0.5, 0.25, true),
+              op: "div", numerator: v.operatingCashFlow, denominator: v.totalCurrentLiabilities,
+              formulaEn: "Operating Cash Flow ÷ Total Current Liabilities", formulaAr: "التدفق النقدي التشغيلي ÷ إجمالي الخصوم المتداولة" },
+            { key: "freeCashFlow", labelEn: "Free Cash Flow (FCF)", label: "التدفق النقدي الحر (FCF)", value: v.freeCashFlow, fmt: "num", flag: v.freeCashFlow >= 0 ? "good" : "poor",
+              op: "sub", numerator: v.operatingCashFlow, denominator: v.capex,
+              formulaEn: "Operating Cash Flow − CapEx", formulaAr: "التدفق النقدي التشغيلي - المصروفات الرأسمالية" },
+            { key: "fcfMargin", labelEn: "FCF Margin", label: "هامش التدفق النقدي الحر", value: fcfMargin, fmt: "pct", flag: classify(fcfMargin, 0.10, 0.0, true),
+              op: "div", numerator: v.freeCashFlow, denominator: v.revenue,
+              formulaEn: "Free Cash Flow ÷ Revenue", formulaAr: "التدفق النقدي الحر ÷ الإيرادات" },
+            { key: "cashFlowToDebt", labelEn: "Cash Flow to Debt", label: "التدفق النقدي إلى الدين", value: cashFlowToDebt, fmt: "pct", flag: classify(cashFlowToDebt, 0.20, 0.10, true),
+              op: "div", numerator: v.operatingCashFlow, denominator: v.totalLiabilities,
+              formulaEn: "Operating Cash Flow ÷ Total Liabilities", formulaAr: "التدفق النقدي التشغيلي ÷ إجمالي الخصوم" },
+            { key: "ocfToNetIncome", labelEn: "OCF to Net Income (Earnings Quality)", label: "التدفق النقدي إلى صافي الربح (جودة الأرباح)", value: ocfToNetIncome, fmt: "x", flag: classify(ocfToNetIncome, 1.0, 0.7, true),
+              op: "div", numerator: v.operatingCashFlow, denominator: v.netIncome,
+              formulaEn: "Operating Cash Flow ÷ Net Income", formulaAr: "التدفق النقدي التشغيلي ÷ صافي الربح" }
+          ]
         }
       ],
       ccc: { dio: dio, dso: dso, dpo: dpo, ccc: ccc }
@@ -202,7 +229,16 @@ window.FA = window.FA || {};
           pct: safeDiv(v[item.key], v.totalAssets)
         };
       });
-      return { periodId: p.id, periodLabel: p.label, incomeStatement: isRows, balanceSheet: bsRows };
+      var cfRows = FA.itemDefs.cashFlow.map(function (item) {
+        return {
+          key: item.key,
+          label: item.label,
+          labelEn: item.labelEn,
+          value: v[item.key],
+          pct: safeDiv(v[item.key], v.revenue)
+        };
+      });
+      return { periodId: p.id, periodLabel: p.label, incomeStatement: isRows, balanceSheet: bsRows, cashFlow: cfRows };
     });
   }
 
@@ -211,7 +247,7 @@ window.FA = window.FA || {};
   // ---------------------------------------------------------------------
   function computeHorizontal() {
     var periods = FA.Store.getPeriods();
-    if (periods.length < 2) return { periods: periods, incomeStatement: [], balanceSheet: [] };
+    if (periods.length < 2) return { periods: periods, incomeStatement: [], balanceSheet: [], cashFlow: [] };
 
     var rows = periods.map(function (p) {
       return FA.Store.getComputedRow(p.id);
@@ -240,7 +276,8 @@ window.FA = window.FA || {};
     return {
       periods: periods,
       incomeStatement: buildFor(FA.itemDefs.incomeStatement),
-      balanceSheet: buildFor(FA.itemDefs.balanceSheet)
+      balanceSheet: buildFor(FA.itemDefs.balanceSheet),
+      cashFlow: buildFor(FA.itemDefs.cashFlow)
     };
   }
 

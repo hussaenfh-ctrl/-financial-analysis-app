@@ -12,10 +12,19 @@
     <h1>📊 <span class="bi-label"><span class="lbl-en">Financial Analysis App</span><span class="lbl-ar" dir="rtl" lang="ar">برنامج التحليل المالي</span></span></h1>
     <div class="header-actions">
       <button id="btnSample" class="btn btn-ghost"><span class="bi-label"><span class="lbl-en">Load Sample Data</span><span class="lbl-ar" dir="rtl" lang="ar">تحميل بيانات تجريبية</span></span></button>
+      <button id="btnExportExcel" class="btn btn-ghost no-print"><span class="bi-label"><span class="lbl-en">Export to Excel</span><span class="lbl-ar" dir="rtl" lang="ar">تصدير إلى إكسيل</span></span></button>
       <button id="btnPrint" class="btn btn-ghost no-print"><span class="bi-label"><span class="lbl-en">Print / PDF</span><span class="lbl-ar" dir="rtl" lang="ar">طباعة / PDF</span></span></button>
       <button id="btnReset" class="btn btn-ghost btn-danger-text"><span class="bi-label"><span class="lbl-en">Clear Data</span><span class="lbl-ar" dir="rtl" lang="ar">مسح البيانات</span></span></button>
     </div>
   </div>
+  <div class="company-bar no-print">
+    <span class="bi-label"><span class="lbl-en">Company:</span><span class="lbl-ar" dir="rtl" lang="ar">الشركة:</span></span>
+    <select id="companySelect"></select>
+    <button id="btnCompanyNew" class="btn-small"><span class="bi-label"><span class="lbl-en">+ New</span><span class="lbl-ar" dir="rtl" lang="ar">+ جديدة</span></span></button>
+    <button id="btnCompanyRename" class="btn-small"><span class="bi-label"><span class="lbl-en">Rename</span><span class="lbl-ar" dir="rtl" lang="ar">إعادة تسمية</span></span></button>
+    <button id="btnCompanyDelete" class="btn-small btn-danger"><span class="bi-label"><span class="lbl-en">Delete</span><span class="lbl-ar" dir="rtl" lang="ar">حذف</span></span></button>
+  </div>
+  <div class="print-only-title" id="printCompanyTitle"></div>
   <nav class="tabs no-print">
     <button class="tab-btn active" data-tab="entry"><span class="bi-label"><span class="lbl-en">Data Entry</span><span class="lbl-ar" dir="rtl" lang="ar">إدخال البيانات</span></span></button>
     <button class="tab-btn" data-tab="ratios"><span class="bi-label"><span class="lbl-en">Financial Ratios</span><span class="lbl-ar" dir="rtl" lang="ar">النسب المالية</span></span></button>
@@ -97,6 +106,7 @@
 <script src="js/narrative.js"></script>
 <script src="js/excelImport.js"></script>
 <script src="js/charts.js"></script>
+<script src="js/exportData.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

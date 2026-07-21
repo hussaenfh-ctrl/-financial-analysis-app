@@ -102,6 +102,25 @@ h1, h2, h3, h4, h5 { margin: 0 0 .5em; }
 .header-inner h1 { font-size: 1.3rem; }
 .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
+.company-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.company-bar select {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  max-width: 220px;
+}
+.print-only-title { display: none; }
+
 .tabs {
   display: flex;
   gap: 4px;
@@ -340,4 +359,11 @@ input.period-label-input { padding: 6px 8px; border-radius: 6px; border: 1px sol
   .tab-panel { display: block !important; margin-bottom: 30px; page-break-inside: avoid; }
   body { background: #fff; }
   .app-header { position: static; }
+  .print-only-title {
+    display: block;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 10px 0 4px;
+  }
 }

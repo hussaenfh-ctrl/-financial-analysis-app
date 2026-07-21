@@ -69,6 +69,30 @@ window.FA = window.FA || {};
       good: function (fv) { return { en: "Interest coverage ratio of " + fv + " is comfortable and shows a good ability to service debt obligations.", ar: "معدل تغطية الفوائد " + fv + " مريح ويدل على قدرة جيدة على خدمة أعباء الدين." }; },
       watch: function (fv) { return { en: "Interest coverage ratio of " + fv + " is acceptable but not fully comfortable.", ar: "معدل تغطية الفوائد " + fv + " مقبول لكنه ليس بمستوى مريح تمامًا." }; },
       poor: function (fv) { return { en: "Interest coverage ratio is weak (" + fv + "), raising concern about the ability to service interest expenses.", ar: "معدل تغطية الفوائد ضعيف (" + fv + ")، ما يثير قلقًا بشأن القدرة على سداد أعباء الفوائد." }; }
+    },
+    ocfRatio: {
+      good: function (fv) { return { en: "Operating cash flow ratio of " + fv + " shows strong ability to cover current liabilities from actual operating cash.", ar: "نسبة التدفق النقدي التشغيلي " + fv + " تعكس قدرة قوية على تغطية الالتزامات المتداولة من النقدية التشغيلية الفعلية." }; },
+      watch: function (fv) { return { en: "Operating cash flow ratio of " + fv + " is moderate.", ar: "نسبة التدفق النقدي التشغيلي " + fv + " معتدلة." }; },
+      poor: function (fv) { return { en: "Operating cash flow ratio is low (" + fv + "), meaning operating cash alone may not comfortably cover current liabilities.", ar: "نسبة التدفق النقدي التشغيلي منخفضة (" + fv + ")، ما يعني أن النقدية التشغيلية وحدها قد لا تغطي الالتزامات المتداولة بارتياح." }; }
+    },
+    freeCashFlow: {
+      good: function (fv) { return { en: "Free cash flow is positive (" + fv + "), leaving room for growth, debt repayment, or dividends after covering capital spending.", ar: "التدفق النقدي الحر موجب (" + fv + ")، ما يترك مجالًا للنمو أو سداد الديون أو التوزيعات بعد تغطية الإنفاق الرأسمالي." }; },
+      poor: function (fv) { return { en: "Free cash flow is negative (" + fv + "), meaning operating cash does not cover capital expenditures.", ar: "التدفق النقدي الحر سالب (" + fv + ")، ما يعني أن النقدية التشغيلية لا تغطي الإنفاق الرأسمالي." }; }
+    },
+    fcfMargin: {
+      good: function (fv) { return { en: "FCF margin of " + fv + " indicates strong conversion of revenue into free cash.", ar: "هامش التدفق النقدي الحر " + fv + " يعكس قدرة قوية على تحويل الإيرادات إلى نقدية حرة." }; },
+      watch: function (fv) { return { en: "FCF margin of " + fv + " is moderate.", ar: "هامش التدفق النقدي الحر " + fv + " معتدل." }; },
+      poor: function (fv) { return { en: "FCF margin is weak or negative (" + fv + "), suggesting limited cash generation relative to revenue.", ar: "هامش التدفق النقدي الحر ضعيف أو سالب (" + fv + ")، ما يشير لتوليد نقدي محدود نسبة للإيرادات." }; }
+    },
+    cashFlowToDebt: {
+      good: function (fv) { return { en: "Cash flow to debt ratio of " + fv + " reflects a strong ability to pay down total liabilities from operating cash.", ar: "نسبة التدفق النقدي إلى الدين " + fv + " تعكس قدرة قوية على سداد إجمالي الخصوم من النقدية التشغيلية." }; },
+      watch: function (fv) { return { en: "Cash flow to debt ratio of " + fv + " is moderate.", ar: "نسبة التدفق النقدي إلى الدين " + fv + " معتدلة." }; },
+      poor: function (fv) { return { en: "Cash flow to debt ratio is low (" + fv + "), meaning debt reduction from operating cash alone would take a long time.", ar: "نسبة التدفق النقدي إلى الدين منخفضة (" + fv + ")، ما يعني أن سداد الدين من النقدية التشغيلية وحدها سيأخذ وقتًا طويلًا." }; }
+    },
+    ocfToNetIncome: {
+      good: function (fv) { return { en: "Operating cash flow to net income of " + fv + " suggests high earnings quality - profits are well backed by actual cash.", ar: "نسبة التدفق النقدي التشغيلي إلى صافي الربح " + fv + " تشير لجودة أرباح عالية - الأرباح مدعومة بنقدية فعلية." }; },
+      watch: function (fv) { return { en: "Operating cash flow to net income of " + fv + " is acceptable but worth monitoring.", ar: "نسبة التدفق النقدي التشغيلي إلى صافي الربح " + fv + " مقبولة لكنها تستحق المتابعة." }; },
+      poor: function (fv) { return { en: "Operating cash flow to net income is low (" + fv + "), raising a question about earnings quality - profits may not be fully backed by cash.", ar: "نسبة التدفق النقدي التشغيلي إلى صافي الربح منخفضة (" + fv + ")، ما يثير تساؤلًا حول جودة الأرباح - قد لا تكون الأرباح مدعومة بالكامل بنقدية." }; }
     }
   };
 

@@ -28,7 +28,11 @@ window.FA = window.FA || {};
     otherNonCurrentLiabilities: ["other non-current liabilities", "خصوم غير متداولة أخرى"],
     shareCapital: ["share capital", "capital stock", "رأس المال"],
     retainedEarnings: ["retained earnings", "الأرباح المحتجزة"],
-    otherEquity: ["other equity", "reserves", "حقوق ملكية أخرى", "احتياطيات"]
+    otherEquity: ["other equity", "reserves", "حقوق ملكية أخرى", "احتياطيات"],
+    operatingCashFlow: ["net cash from operating activities", "operating cash flow", "cash from operations", "صافي النقدية من الأنشطة التشغيلية", "التدفقات النقدية من الأنشطة التشغيلية"],
+    capex: ["capital expenditures", "capex", "purchase of fixed assets", "purchase of property plant and equipment", "المصروفات الرأسمالية", "شراء أصول ثابتة"],
+    investingCashFlowOther: ["investing activities", "net cash from investing activities", "الأنشطة الاستثمارية", "صافي النقدية من الأنشطة الاستثمارية"],
+    financingCashFlow: ["financing activities", "net cash from financing activities", "الأنشطة التمويلية", "صافي النقدية من الأنشطة التمويلية"]
   };
 
   function normalize(s) {
@@ -251,8 +255,15 @@ window.FA = window.FA || {};
       bsGroup.appendChild(buildItemRow(item));
     });
 
+    var cfGroup = el("div", { class: "item-group" });
+    cfGroup.appendChild(el("h5", null, [FA.util.biEl("span", "Cash Flow Statement", "قائمة التدفقات النقدية")]));
+    FA.itemDefs.cashFlow.filter(function (i) { return i.editable; }).forEach(function (item) {
+      cfGroup.appendChild(buildItemRow(item));
+    });
+
     itemsSection.appendChild(isGroup);
     itemsSection.appendChild(bsGroup);
+    itemsSection.appendChild(cfGroup);
 
     // ---- زر التأكيد ----
     var applyBtn = el("button", { type: "button", class: "btn btn-primary", text: bi("Apply Mapping & Import Data", "تطبيق المطابقة واستيراد البيانات") });
